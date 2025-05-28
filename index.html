@@ -3,332 +3,190 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>4x4 Grid with Generate & Search</title>
+<title>Number Grid with Combinations</title>
 <style>
 body {
-    font-family: Arial, sans-serif;
-    margin: 0 auto;
-    max-width: 1200px;
-    padding: 20px;
+  font-family: Arial, sans-serif;
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 10px;
+  text-align: center;
 }
 h1 {
-    text-align: center;
+  margin-bottom: 20px;
 }
-.controls, .search-bar, .generate-section, .display-area {
-    margin-bottom: 20px;
+#grid {
+  display: grid;
+  grid-template-columns: repeat(4, 80px);
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
 }
-button {
-    padding: 8px 15px;
-    margin-right: 10px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+#grid button {
+  width: 80px;
+  height: 80px;
+  font-size: 24px;
+  cursor: default;
 }
-button:hover {
-    background-color: #45a049;
+.buttons {
+  margin-bottom: 20px;
 }
-#gridContainer {
-    display: flex;
-    flex-direction: row; /* side by side */
-    flex-wrap: wrap; /* wrap on small screens */
-    justify-content: center;
-    gap: 20px;
+#searchContainer {
+  margin-bottom: 20px;
 }
-.grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 5px;
+#searchInput {
+  width: 300px;
+  padding: 8px;
+  font-size: 16px;
 }
-.cell {
-    border: 1px solid #ccc;
-    padding: 15px;
-    text-align: center;
-    font-weight: bold;
-    background-color: #f9f9f9;
+#combinations {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
 }
-.cell input {
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
-    text-align: center;
+.comb {
+  background-color: #f0f0f0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 16px;
+  min-width: 50px;
+  text-align: center;
 }
-#fullNumberDisplay {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding: 10px 0;
-    border: 1px solid #ccc;
-}
-.number-block {
-    display: inline-block;
-    padding: 8px 12px;
-    margin: 0 2px;
-    background-color: #e0e0e0;
-    border-radius: 4px;
-    font-size: 20px;
-    min-width: 40px;
-    text-align: center;
-}
-.highlight {
-    background-color: #ffeb3b;
+#results {
+  margin-top: 20px;
+  font-weight: bold;
 }
 </style>
 </head>
 <body>
 
-<h1>4x4 Grid with Generate & Search</h1>
+<h1>Number Grid with Combinations</h1>
 
-<!-- Control buttons at the top -->
-<div class="controls">
-    <button id="clearBtn">Clear All</button>
+<div id="grid"></div>
+
+<div class="buttons">
+  <button id="generateBtn">Generate</button>
+  <button id="resetBtn">Reset</button>
 </div>
 
-<!-- Grids -->
-<div id="gridContainer">
-    <div>
-        <h2 style="text-align:center;">Grid 1</h2>
-        <div id="grid1" class="grid"></div>
-    </div>
-    <div>
-        <h2 style="text-align:center;">Grid 2</h2>
-        <div id="grid2" class="grid"></div>
-    </div>
+<div id="searchContainer">
+  <input type="text" id="searchInput" placeholder="Search combinations containing digits..." />
+  <button id="searchBtn">Search</button>
 </div>
 
-<!-- Generate buttons below grids for cleaner layout -->
-<div class="generate-section" style="text-align:center;">
-    <button id="generateBtn">Generate Grids</button>
-    <button id="generateAllBtn">Generate All Combinations</button>
-</div>
+<h2>Total Combinations: 256</h2>
+<div id="combinations"></div>
 
-<!-- Search tab -->
-<div class="search-bar" style="text-align:center;">
-    <input type="text" id="searchInput" placeholder="Search sequences, e.g., 12 or 123" style="width: 200px; font-size:16px; padding:8px;"/>
-    <button id="searchBtn">Search</button>
-</div>
-
-<!-- Display all numbers side by side -->
-<h2 style="text-align:center;">All Numbers (Side by Side)</h2>
-<div id="fullNumberDisplay"></div>
-
-<!-- Search Results -->
-<h2>Results</h2>
 <div id="results"></div>
 
 <script>
+// Generate the 4x4 grid of numbers
 const gridSize = 4;
+const gridContainer = document.getElementById('grid');
 
-// Function to create an empty grid
-function createGrid(gridElement, dataArray) {
-    gridElement.innerHTML = '';
-    for (let i=0; i<gridSize; i++) {
-        for (let j=0; j<gridSize; j++) {
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.maxLength = 1; // only 1 character
-            input.pattern = "[0-9]";
-            input.placeholder = "0-9";
-            input.value = dataArray && dataArray[i] ? dataArray[i][j] : '';
-            input.style.width='50px';
-            input.style.height='50px';
-            input.style.fontSize='24px';
-            input.style.textAlign='center';
-
-            // restrict input to 0-9
-            input.addEventListener('input', function() {
-                this.value = this.value.replace(/[^0-9]/g, '').slice(0,1);
-            });
-
-            const cell = document.createElement('div');
-            cell.className='cell';
-            cell.appendChild(input);
-            gridElement.appendChild(cell);
-        }
-    }
+function createGrid() {
+  gridContainer.innerHTML = '';
+  for (let i=0; i<gridSize*gridSize; i++) {
+    const btn = document.createElement('button');
+    btn.innerText = '';
+    gridContainer.appendChild(btn);
+  }
 }
 
-// Function to get grid values
-function getGridValues(gridElement) {
-    const inputs = gridElement.querySelectorAll('input');
-    const data = [];
-    for (let i=0; i<gridSize; i++) {
-        data[i] = [];
-        for (let j=0; j<gridSize; j++) {
-            const val = inputs[i*gridSize + j].value.trim();
-            data[i][j] = val !== '' ? val : '';
-        }
-    }
-    return data;
+// Fill grid with random digits
+function fillGridRandom() {
+  const buttons = document.querySelectorAll('#grid button');
+  buttons.forEach(btn => {
+    btn.innerText = Math.floor(Math.random() * 10).toString();
+  });
 }
 
-// Generate random digits for both grids
-function generateGrids() {
-    const data1 = [];
-    const data2 = [];
-    for (let i=0; i<gridSize; i++) {
-        data1[i] = [];
-        data2[i] = [];
-        for (let j=0; j<gridSize; j++) {
-            data1[i][j] = Math.floor(Math.random()*10).toString();
-            data2[i][j] = Math.floor(Math.random()*10).toString();
-        }
-    }
-    createGrid(document.getElementById('grid1'), data1);
-    createGrid(document.getElementById('grid2'), data2);
-    displayAllNumbers();
-    document.getElementById('results').innerHTML = '';
+// Reset grid to empty
+function resetGrid() {
+  const buttons = document.querySelectorAll('#grid button');
+  buttons.forEach(btn => {
+    btn.innerText = '';
+  });
 }
 
-// Generate all 256 combinations for both grids
+// Generate all combinations from 0000 to 9999
 function generateAllCombinations() {
-    const allDigits = ['0','1','2','3','4','5','6','7','8','9'];
-    const combos = [];
-
-    // Generate all 4-digit combinations (0000 to 9999)
-    for (let d1 of allDigits) {
-        for (let d2 of allDigits) {
-            for (let d3 of allDigits) {
-                for (let d4 of allDigits) {
-                    combos.push([d1, d2, d3, d4]);
-                }
-            }
-        }
+  const combos = [];
+  for (let i=0; i<=255; i++) {
+    const numStr = i.toString().padStart(3,'0');
+    for (let d=0; d<=9; d++) {
+      combos.push(d.toString().padStart(4,'0'));
     }
-
-    // Flatten into 16x16 grid: fill first with first 16, second with next 16, etc.
-    // But for simplicity, we'll just fill with random or sequential combos
-    // Here, we will select the first 16 combos for grid1, next 16 for grid2 for demonstration
-    // But to generate all, we can populate grid with a sequence of combos
-
-    // For demonstration, fill grid1 with first 16 combos, grid2 with next 16 combos
-    const grid1Combos = combos.slice(0, 16);
-    const grid2Combos = combos.slice(16, 32);
-
-    // Fill grids with these combos
-    // For each grid, fill 4x4 cells with the combo digits
-    const grid1Data = [];
-    const grid2Data = [];
-
-    for (let i=0; i<gridSize; i++) {
-        grid1Data[i] = [];
-        grid2Data[i] = [];
-        for (let j=0; j<gridSize; j++) {
-            grid1Data[i][j] = grid1Combos[i][j];
-            grid2Data[i][j] = grid2Combos[i][j];
-        }
+  }
+  // Better way: generate all 0000 to 9999
+  combos.length=0; // clear
+  for (let i=0; i<=255; i++) {
+    const baseStr = i.toString().padStart(3,'0');
+    for (let d=0; d<=9; d++) {
+      combos.push(baseStr + d);
     }
-
-    createGrid(document.getElementById('grid1'), grid1Data);
-    createGrid(document.getElementById('grid2'), grid2Data);
-    displayAllNumbers();
-    document.getElementById('results').innerHTML = '';
+  }
+  return combos;
 }
 
-// Clear all grids
-function clearAll() {
-    createGrid(document.getElementById('grid1'), []);
-    createGrid(document.getElementById('grid2'), []);
-    document.getElementById('fullNumberDisplay').innerHTML = '';
-    document.getElementById('results').innerHTML = '';
+// Generate and display all combinations
+function displayCombinations() {
+  const combos = [];
+  for (let i=0; i<=255; i++) {
+    const baseStr = i.toString().padStart(3,'0');
+    for (let d=0; d<=9; d++) {
+      combos.push(baseStr + d);
+    }
+  }
+  const container = document.getElementById('combinations');
+  container.innerHTML = '';
+  combos.forEach(c => {
+    const span = document.createElement('div');
+    span.className='comb';
+    span.innerText=c;
+    container.appendChild(span);
+  });
 }
 
-// Display all 16 numbers in each grid side by side (total 256 in combined display)
-function displayAllNumbers() {
-    const data1 = getGridValues(document.getElementById('grid1'));
-    const data2 = getGridValues(document.getElementById('grid2'));
-    const container = document.getElementById('fullNumberDisplay');
-    container.innerHTML = '';
-
-    const flat1 = data1.flat();
-    const flat2 = data2.flat();
-
-    // Show grid 1 numbers
-    for (let i=0; i<flat1.length; i++) {
-        const block = document.createElement('div');
-        block.className='number-block';
-        block.innerText = flat1[i] !== '' ? flat1[i] : '?';
-        container.appendChild(block);
-    }
-    // Show grid 2 numbers
-    for (let i=0; i<flat2.length; i++) {
-        const block = document.createElement('div');
-        block.className='number-block';
-        block.innerText = flat2[i] !== '' ? flat2[i] : '?';
-        container.appendChild(block);
-    }
-}
-
-// Search for sequences (double or triple digits)
+// Search in combinations
 function performSearch() {
-    const seq = document.getElementById('searchInput').value.trim();
-    if (seq === '') {
-        document.getElementById('results').innerHTML = 'Enter a sequence to search.';
-        return;
+  const query = document.getElementById('searchInput').value.trim();
+  const container = document.getElementById('combinations');
+  const combs = Array.from(container.children);
+  let foundCount = 0;
+  combs.forEach(c => c.style.backgroundColor = '#f0f0f0');
+  if (!query) {
+    document.getElementById('results').innerText='Enter a sequence to search.';
+    return;
+  }
+  if (!/^[0-9]+$/.test(query) || query.length > 4) {
+    document.getElementById('results').innerText='Enter 1 to 4 digits.';
+    return;
+  }
+
+  combs.forEach(c => {
+    if (c.innerText.includes(query)) {
+      c.style.backgroundColor='yellow';
+      foundCount++;
     }
-    if (!/^[0-9]{1,3}$/.test(seq)) {
-        document.getElementById('results').innerHTML = 'Search sequence must be 1 to 3 digits.';
-        return;
-    }
-
-    const data1 = getGridValues(document.getElementById('grid1'));
-    const data2 = getGridValues(document.getElementById('grid2'));
-    const fullNumbers1 = data1.flat().join('');
-    const fullNumbers2 = data2.flat().join('');
-    const combinedNumbers = fullNumbers1 + fullNumbers2;
-
-    // Find all occurrences of the sequence in the combined string
-    const results = [];
-    for (let i=0; i<=combinedNumbers.length - seq.length; i++) {
-        if (combinedNumbers.substr(i, seq.length) === seq) {
-            // Determine if in grid1 or grid2
-            if (i < fullNumbers1.length) {
-                results.push({grid: 'grid1', index: i});
-            } else {
-                results.push({grid: 'grid2', index: i - fullNumbers1.length});
-            }
-        }
-    }
-
-    // Clear previous highlights
-    document.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight'));
-
-    const resultDiv = document.getElementById('results');
-    resultDiv.innerHTML = '';
-
-    if (results.length > 0) {
-        results.forEach(res => {
-            highlightCellInGrid(res.grid, res.index);
-        });
-        resultDiv.innerHTML = `Sequence "${seq}" found ${results.length} time(s).`;
-    } else {
-        resultDiv.innerHTML = `Sequence "${seq}" not found.`;
-    }
+  });
+  document.getElementById('results').innerText=`Found ${foundCount} combinations containing "${query}".`;
 }
 
-// Helper to highlight specific cell in grid
-function highlightCellInGrid(gridId, index) {
-    const grid = document.getElementById(gridId);
-    const cells = grid.querySelectorAll('.cell');
-    // Remove previous highlights
-    cells.forEach(c => c.classList.remove('highlight'));
-    if (index >= 0 && index < cells.length) {
-        cells[index].classList.add('highlight');
-    }
-}
-
-// Event bindings
-document.getElementById('generateBtn').addEventListener('click', generateGrids);
-document.getElementById('generateAllBtn').addEventListener('click', generateAllCombinations);
-document.getElementById('clearBtn').addEventListener('click', clearAll);
+// Event listeners
+document.getElementById('generateBtn').addEventListener('click', fillGridRandom);
+document.getElementById('resetBtn').addEventListener('click', resetGrid);
 document.getElementById('searchBtn').addEventListener('click', performSearch);
 
-// Initialize grids empty on load
-window.onload = () => {
-    createGrid(document.getElementById('grid1'), []);
-    createGrid(document.getElementById('grid2'), []);
-};
+// Initialize grid and combinations
+createGrid();
+displayCombinations();
 </script>
 
 </body>
