@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>4x4 Grid Pattern Search & Display</title>
+<title>4x4 Grid with Generate & Search</title>
 <style>
 body {
     font-family: Arial, sans-serif;
@@ -78,21 +78,16 @@ button:hover {
 </head>
 <body>
 
-<h1>4x4 Grid Pattern Search & Display</h1>
+<h1>4x4 Grid with Generate & Search</h1>
 
 <div class="controls">
-    <button id="loadExampleBtn">Load Example</button>
+    <button id="generateBtn">Generate Grids</button>
     <button id="clearBtn">Clear All</button>
 </div>
 
 <div class="search-bar">
-    <input type="text" id="patternInput" placeholder="Enter pattern, e.g., 1-2-3" style="width: 200px; font-size:16px; padding:8px;"/>
-    <button id="searchPatternBtn">Search Pattern</button>
-</div>
-
-<div class="search-bar">
-    <input type="text" id="numberSearchInput" placeholder="Search number (0-9)" style="width: 200px; font-size:16px; padding:8px;"/>
-    <button id="searchNumberBtn">Search Number</button>
+    <input type="text" id="searchInput" placeholder="Search sequences, e.g., 12 or 123" style="width: 200px; font-size:16px; padding:8px;"/>
+    <button id="searchBtn">Search</button>
 </div>
 
 <div id="gridContainer">
@@ -114,10 +109,8 @@ button:hover {
 
 <script>
 const gridSize = 4;
-let gridData1 = [];
-let gridData2 = [];
 
-// Create grid with inputs
+// Create empty grid
 function createGrid(gridElement, dataArray) {
     gridElement.innerHTML = '';
     for (let i=0; i<gridSize; i++) {
@@ -132,10 +125,8 @@ function createGrid(gridElement, dataArray) {
             input.style.height='50px';
             input.style.fontSize='24px';
             input.style.textAlign='center';
-            input.dataset.row = i;
-            input.dataset.col = j;
 
-            // Add event listener to restrict input to digits only
+            // Restrict input to 0-9
             input.addEventListener('input', function() {
                 this.value = this.value.replace(/[^0-9]/g, '').slice(0,1);
             });
@@ -162,22 +153,20 @@ function getGridValues(gridElement) {
     return data;
 }
 
-// Load example data
-function loadExample() {
-    gridData1 = [
-        [1,2,3,4],
-        [5,6,7,8],
-        [9,0,1,2],
-        [3,4,5,6]
-    ];
-    gridData2 = [
-        [6,5,4,3],
-        [2,1,0,9],
-        [8,7,6,5],
-        [4,3,2,1]
-    ];
-    createGrid(document.getElementById('grid1'), gridData1);
-    createGrid(document.getElementById('grid2'), gridData2);
+// Generate random digits for grids
+function generateGrids() {
+    const data1 = [];
+    const data2 = [];
+    for (let i=0; i<gridSize; i++) {
+        data1[i] = [];
+        data2[i] = [];
+        for (let j=0; j<gridSize; j++) {
+            data1[i][j] = Math.floor(Math.random()*10).toString();
+            data2[i][j] = Math.floor(Math.random()*10).toString();
+        }
+    }
+    createGrid(document.getElementById('grid1'), data1);
+    createGrid(document.getElementById('grid2'), data2);
     displayAllNumbers();
     document.getElementById('results').innerHTML = '';
 }
@@ -217,187 +206,73 @@ function displayAllNumbers() {
     }
 }
 
-// Event listeners
-document.getElementById('loadExampleBtn').addEventListener('click', loadExample);
-document.getElementById('clearBtn').addEventListener('click', clearAll);
-window.onload = () => {
-    createGrid(document.getElementById('grid1'), []);
-    createGrid(document.getElementById('grid2'), []);
-};
-
-// Search pattern
-document.getElementById('searchPatternBtn').addEventListener('click', () => {
-    performPatternSearch();
-});
-
-// Search number
-document.getElementById('searchNumberBtn').addEventListener('click', () => {
-    performNumberSearch();
-});
-
-// Perform pattern search
-function performPatternSearch() {
-    const patternStr = document.getElementById('patternInput').value.trim();
-    if (!patternStr) {
-        document.getElementById('results').innerHTML = 'Enter a pattern.';
+// Search for sequences
+function performSearch() {
+    const seq = document.getElementById('searchInput').value.trim();
+    if (seq === '') {
+        document.getElementById('results').innerHTML = 'Enter a sequence to search.';
         return;
     }
-    const pattern = patternStr.split(/[-,\s]+/).filter(s => s !== '');
-    // Validate pattern contains only digits 0-9
-    if (!pattern.every(n => /^[0-9]$/.test(n))) {
-        document.getElementById('results').innerHTML = 'Pattern must contain digits 0-9.';
+    if (!/^[0-9]+$/.test(seq)) {
+        document.getElementById('results').innerHTML = 'Search sequence must be digits only.';
         return;
     }
+
     const data1 = getGridValues(document.getElementById('grid1'));
     const data2 = getGridValues(document.getElementById('grid2'));
+    const fullNumbers1 = data1.flat().join('');
+    const fullNumbers2 = data2.flat().join('');
+    const combinedNumbers = fullNumbers1 + fullNumbers2;
+
+    // Check if the sequence exists in the combined string
+    const index = combinedNumbers.indexOf(seq);
     const resultDiv = document.getElementById('results');
 
-    // Remove previous highlights
+    // Clear previous highlights
     document.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight'));
 
-    const foundInGrid1 = findPatternInGrid(data1, pattern);
-    const foundInGrid2 = findPatternInGrid(data2, pattern);
-
-    resultDiv.innerHTML = '';
-    if (foundInGrid1) {
-        const div = document.createElement('div');
-        div.innerHTML = `<strong>Pattern found in Grid 1</strong>`;
-        resultDiv.appendChild(div);
-        highlightPatternInGrid('grid1', foundInGrid1);
-    }
-    if (foundInGrid2) {
-        const div = document.createElement('div');
-        div.innerHTML = `<strong>Pattern found in Grid 2</strong>`;
-        resultDiv.appendChild(div);
-        highlightPatternInGrid('grid2', foundInGrid2);
-    }
-    if (!foundInGrid1 && !foundInGrid2) {
-        resultDiv.innerHTML = 'Pattern not found in either grid.';
-    }
-}
-
-// Perform number search
-function performNumberSearch() {
-    const searchNumber = document.getElementById('numberSearchInput').value.trim();
-    if (!/^[0-9]$/.test(searchNumber)) {
-        document.getElementById('results').innerHTML = 'Enter a single digit (0-9).';
-        return;
-    }
-    const data1 = getGridValues(document.getElementById('grid1'));
-    const data2 = getGridValues(document.getElementById('grid2'));
-    const resultDiv = document.getElementById('results');
-
-    // Remove previous highlights
-    document.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight'));
-
-    const foundInGrid1 = findNumberInGrid(data1, searchNumber);
-    const foundInGrid2 = findNumberInGrid(data2, searchNumber);
-
-    resultDiv.innerHTML = '';
-    if (foundInGrid1) {
-        const div = document.createElement('div');
-        div.innerHTML = `<strong>Number ${searchNumber} found in Grid 1</strong>`;
-        resultDiv.appendChild(div);
-        highlightNumberInGrid('grid1', searchNumber);
-    }
-    if (foundInGrid2) {
-        const div = document.createElement('div');
-        div.innerHTML = `<strong>Number ${searchNumber} found in Grid 2</strong>`;
-        resultDiv.appendChild(div);
-        highlightNumberInGrid('grid2', searchNumber);
-    }
-    if (!foundInGrid1 && !foundInGrid2) {
-        resultDiv.innerHTML = `Number ${searchNumber} not found in either grid.`;
-    }
-}
-
-// Pattern search helper
-function findPatternInGrid(data, pattern) {
-    for (let r=0; r<gridSize; r++) {
-        for (let c=0; c<gridSize; c++) {
-            if (data[r][c] === pattern[0]) {
-                const visited = new Set();
-                if (searchPatternRec(data, r, c, pattern, 0, visited)) {
-                    return {row: r, col: c};
+    if (index !== -1) {
+        // Highlight all digits in the sequence
+        for (let i=0; i<combinedNumbers.length; i++) {
+            if (i >= index && i < index + seq.length) {
+                // Determine if in grid1 or grid2
+                if (i < fullNumbers1.length) {
+                    // in grid1
+                    highlightCellInGrid('grid1', i);
+                } else {
+                    // in grid2
+                    highlightCellInGrid('grid2', i - fullNumbers1.length);
                 }
             }
         }
+        resultDiv.innerHTML = `Sequence "${seq}" found in the combined grid numbers.`;
+    } else {
+        resultDiv.innerHTML = `Sequence "${seq}" not found.`;
     }
-    return null;
 }
 
-function searchPatternRec(data, r, c, pattern, index, visited) {
-    if (index >= pattern.length) return true;
-    if (r < 0 || r >= gridSize || c < 0 || c >= gridSize) return false;
-    const key = r + ',' + c;
-    if (visited.has(key)) return false;
-    if (data[r][c] !== pattern[index]) return false;
-
-    visited.add(key);
-    const directions = [[-1,0], [1,0], [0,-1], [0,1]];
-    for (const [dr, dc] of directions) {
-        if (searchPatternRec(data, r+dr, c+dc, pattern, index+1, visited)) {
-            return true;
-        }
-    }
-    visited.delete(key);
-    return false;
-}
-
-// Highlight pattern start cell
-function highlightPatternInGrid(gridId, info) {
+// Helper to highlight specific cell in grid
+function highlightCellInGrid(gridId, index) {
     const grid = document.getElementById(gridId);
-    grid.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight'));
-    if (info) {
-        const index = info.row * gridSize + info.col;
-        const cell = grid.querySelectorAll('.cell')[index];
-        cell.classList.add('highlight');
+    const cells = grid.querySelectorAll('.cell');
+    // Remove previous highlights
+    cells.forEach(c => c.classList.remove('highlight'));
+    if (index >= 0 && index < cells.length) {
+        cells[index].classList.add('highlight');
     }
-}
-
-// Find number in grid
-function findNumberInGrid(data, number) {
-    for (let r=0; r<gridSize; r++) {
-        for (let c=0; c<gridSize; c++) {
-            if (data[r][c] === number) {
-                return {row: r, col: c};
-            }
-        }
-    }
-    return null;
-}
-
-// Highlight number in grid
-function highlightNumberInGrid(gridId, number) {
-    const grid = document.getElementById(gridId);
-    grid.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight'));
-    grid.querySelectorAll('.cell').forEach((cell, index) => {
-        const val = cell.querySelector('input').value.trim();
-        if (val === number) {
-            cell.classList.add('highlight');
-        }
-    });
 }
 
 // Event bindings
-document.getElementById('loadExampleBtn').addEventListener('click', () => {
-    loadExample();
-});
-document.getElementById('clearBtn').addEventListener('click', () => {
-    clearAll();
-});
-document.getElementById('searchPatternBtn').addEventListener('click', () => {
-    performPatternSearch();
-});
-document.getElementById('searchNumberBtn').addEventListener('click', () => {
-    performNumberSearch();
-});
+document.getElementById('generateBtn').addEventListener('click', generateGrids);
+document.getElementById('clearBtn').addEventListener('click', clearAll);
+document.getElementById('searchBtn').addEventListener('click', performSearch);
 
-// Initialize empty grids
+// Initialize empty grids on load
 window.onload = () => {
     createGrid(document.getElementById('grid1'), []);
     createGrid(document.getElementById('grid2'), []);
 };
 </script>
+
 </body>
 </html>
