@@ -31,8 +31,10 @@ button:hover {
 }
 #gridContainer {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
+    flex-direction: row; /* side by side */
+    flex-wrap: wrap; /* wrap on small screens */
+    justify-content: center;
+    gap: 20px;
 }
 .grid {
     display: grid;
@@ -89,17 +91,22 @@ button:hover {
 </div>
 
 <div class="search-bar">
-    <input type="text" id="numberSearchInput" placeholder="Search number (2D/3D)" style="width: 200px; font-size:16px; padding:8px;"/>
+    <input type="text" id="numberSearchInput" placeholder="Search number (0-9)" style="width: 200px; font-size:16px; padding:8px;"/>
     <button id="searchNumberBtn">Search Number</button>
 </div>
 
-<h2>Grid 1</h2>
-<div id="grid1" class="grid"></div>
+<div id="gridContainer">
+    <div>
+        <h2 style="text-align:center;">Grid 1</h2>
+        <div id="grid1" class="grid"></div>
+    </div>
+    <div>
+        <h2 style="text-align:center;">Grid 2</h2>
+        <div id="grid2" class="grid"></div>
+    </div>
+</div>
 
-<h2>Grid 2</h2>
-<div id="grid2" class="grid"></div>
-
-<h2>All Numbers (Side by Side)</h2>
+<h2 style="text-align:center;">All Numbers (Side by Side)</h2>
 <div id="fullNumberDisplay"></div>
 
 <h2>Results</h2>
@@ -110,14 +117,16 @@ const gridSize = 4;
 let gridData1 = [];
 let gridData2 = [];
 
+// Create grid with inputs
 function createGrid(gridElement, dataArray) {
     gridElement.innerHTML = '';
     for (let i=0; i<gridSize; i++) {
         for (let j=0; j<gridSize; j++) {
             const input = document.createElement('input');
-            input.type = 'number';
-            input.min = 0;
-            input.max = 9;
+            input.type = 'text';
+            input.maxLength = 1; // only 1 character
+            input.pattern = "[0-9]";
+            input.placeholder = "0-9";
             input.value = dataArray && dataArray[i] ? dataArray[i][j] : '';
             input.style.width='50px';
             input.style.height='50px';
@@ -125,6 +134,11 @@ function createGrid(gridElement, dataArray) {
             input.style.textAlign='center';
             input.dataset.row = i;
             input.dataset.col = j;
+
+            // Add event listener to restrict input to digits only
+            input.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0,1);
+            });
 
             const cell = document.createElement('div');
             cell.className='cell';
@@ -134,6 +148,7 @@ function createGrid(gridElement, dataArray) {
     }
 }
 
+// Get grid values
 function getGridValues(gridElement) {
     const inputs = gridElement.querySelectorAll('input');
     const data = [];
@@ -147,8 +162,8 @@ function getGridValues(gridElement) {
     return data;
 }
 
+// Load example data
 function loadExample() {
-    // Example data
     gridData1 = [
         [1,2,3,4],
         [5,6,7,8],
@@ -167,6 +182,7 @@ function loadExample() {
     document.getElementById('results').innerHTML = '';
 }
 
+// Clear all grids and display
 function clearAll() {
     createGrid(document.getElementById('grid1'), []);
     createGrid(document.getElementById('grid2'), []);
@@ -174,24 +190,25 @@ function clearAll() {
     document.getElementById('results').innerHTML = '';
 }
 
+// Display all numbers side by side
 function displayAllNumbers() {
-    // Concatenate all numbers side by side for both grids
     const data1 = getGridValues(document.getElementById('grid1'));
     const data2 = getGridValues(document.getElementById('grid2'));
     const container = document.getElementById('fullNumberDisplay');
     container.innerHTML = '';
 
-    // Flatten and combine both grids
     const flat1 = data1.flat();
     const flat2 = data2.flat();
 
-    // Combine both in side-by-side display
+    // Add grid 1 numbers
     for (let i=0; i<flat1.length; i++) {
         const block = document.createElement('div');
         block.className='number-block';
         block.innerText = flat1[i] !== '' ? flat1[i] : '?';
         container.appendChild(block);
     }
+
+    // Add grid 2 numbers
     for (let i=0; i<flat2.length; i++) {
         const block = document.createElement('div');
         block.className='number-block';
@@ -200,23 +217,25 @@ function displayAllNumbers() {
     }
 }
 
-document.getElementById('loadExampleBtn').addEventListener('click', () => {
-    loadExample();
-});
-document.getElementById('clearBtn').addEventListener('click', () => {
-    clearAll();
-});
+// Event listeners
+document.getElementById('loadExampleBtn').addEventListener('click', loadExample);
+document.getElementById('clearBtn').addEventListener('click', clearAll);
 window.onload = () => {
     createGrid(document.getElementById('grid1'), []);
     createGrid(document.getElementById('grid2'), []);
 };
+
+// Search pattern
 document.getElementById('searchPatternBtn').addEventListener('click', () => {
     performPatternSearch();
 });
+
+// Search number
 document.getElementById('searchNumberBtn').addEventListener('click', () => {
     performNumberSearch();
 });
 
+// Perform pattern search
 function performPatternSearch() {
     const patternStr = document.getElementById('patternInput').value.trim();
     if (!patternStr) {
@@ -224,14 +243,17 @@ function performPatternSearch() {
         return;
     }
     const pattern = patternStr.split(/[-,\s]+/).filter(s => s !== '');
-    // Search in Grid 1
+    // Validate pattern contains only digits 0-9
+    if (!pattern.every(n => /^[0-9]$/.test(n))) {
+        document.getElementById('results').innerHTML = 'Pattern must contain digits 0-9.';
+        return;
+    }
     const data1 = getGridValues(document.getElementById('grid1'));
     const data2 = getGridValues(document.getElementById('grid2'));
     const resultDiv = document.getElementById('results');
 
-    // Clear previous highlights
+    // Remove previous highlights
     document.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight'));
-    document.querySelectorAll('.cell-highlight').forEach(c => c.style.display='none');
 
     const foundInGrid1 = findPatternInGrid(data1, pattern);
     const foundInGrid2 = findPatternInGrid(data2, pattern);
@@ -254,19 +276,19 @@ function performPatternSearch() {
     }
 }
 
+// Perform number search
 function performNumberSearch() {
     const searchNumber = document.getElementById('numberSearchInput').value.trim();
-    if (searchNumber === '') {
-        document.getElementById('results').innerHTML = 'Enter a number to search.';
+    if (!/^[0-9]$/.test(searchNumber)) {
+        document.getElementById('results').innerHTML = 'Enter a single digit (0-9).';
         return;
     }
     const data1 = getGridValues(document.getElementById('grid1'));
     const data2 = getGridValues(document.getElementById('grid2'));
     const resultDiv = document.getElementById('results');
 
-    // Clear previous highlights
+    // Remove previous highlights
     document.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight'));
-    document.querySelectorAll('.cell-highlight').forEach(c => c.style.display='none');
 
     const foundInGrid1 = findNumberInGrid(data1, searchNumber);
     const foundInGrid2 = findNumberInGrid(data2, searchNumber);
@@ -289,8 +311,8 @@ function performNumberSearch() {
     }
 }
 
+// Pattern search helper
 function findPatternInGrid(data, pattern) {
-    // Search for pattern in grid, moving to adjacent cells
     for (let r=0; r<gridSize; r++) {
         for (let c=0; c<gridSize; c++) {
             if (data[r][c] === pattern[0]) {
@@ -322,20 +344,18 @@ function searchPatternRec(data, r, c, pattern, index, visited) {
     return false;
 }
 
+// Highlight pattern start cell
 function highlightPatternInGrid(gridId, info) {
     const grid = document.getElementById(gridId);
     grid.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight'));
-    grid.querySelectorAll('.cell-highlight').forEach(c => c.style.display='none');
-
     if (info) {
-        // Highlight starting cell
         const index = info.row * gridSize + info.col;
         const cell = grid.querySelectorAll('.cell')[index];
         cell.classList.add('highlight');
-        cell.querySelector('.cell-highlight').style.display='block';
     }
 }
 
+// Find number in grid
 function findNumberInGrid(data, number) {
     for (let r=0; r<gridSize; r++) {
         for (let c=0; c<gridSize; c++) {
@@ -347,22 +367,19 @@ function findNumberInGrid(data, number) {
     return null;
 }
 
+// Highlight number in grid
 function highlightNumberInGrid(gridId, number) {
     const grid = document.getElementById(gridId);
     grid.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight'));
-    grid.querySelectorAll('.cell-highlight').forEach(c => c.style.display='none');
-
-    const cells = grid.querySelectorAll('.cell');
-    cells.forEach((cell, index) => {
+    grid.querySelectorAll('.cell').forEach((cell, index) => {
         const val = cell.querySelector('input').value.trim();
         if (val === number) {
             cell.classList.add('highlight');
-            cell.querySelector('.cell-highlight').style.display='block';
         }
     });
 }
 
-// Event listeners
+// Event bindings
 document.getElementById('loadExampleBtn').addEventListener('click', () => {
     loadExample();
 });
@@ -376,7 +393,7 @@ document.getElementById('searchNumberBtn').addEventListener('click', () => {
     performNumberSearch();
 });
 
-// Initialize
+// Initialize empty grids
 window.onload = () => {
     createGrid(document.getElementById('grid1'), []);
     createGrid(document.getElementById('grid2'), []);
