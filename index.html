@@ -1,594 +1,536 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced 4x4 Grid Comparator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .container {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-        }
-        .grid-container {
-            width: 48%;
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-        .cell {
-            border: 1px solid #ccc;
-            padding: 15px;
-            text-align: center;
-            font-weight: bold;
-            background-color: #f9f9f9;
-            position: relative;
-        }
-        .cell input {
-            width: 30px;
-            text-align: center;
-            font-weight: bold;
-            border: none;
-            background: transparent;
-        }
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        button {
-            padding: 8px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .highlight {
-            background-color: #ffeb3b;
-            animation: pulse 1s;
-        }
-        @keyframes pulse {
-            0% { background-color: #ffeb3b; }
-            50% { background-color: #ffc107; }
-            100% { background-color: #ffeb3b; }
-        }
-        .comparison-results {
-            margin-top: 30px;
-            padding: 15px;
-            background-color: #e9f7ef;
-            border-radius: 5px;
-        }
-        .match-item {
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #e3f2fd;
-            border-radius: 3px;
-        }
-        .search-container {
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #f5f5f5;
-            border-radius: 5px;
-        }
-        .search-container input {
-            padding: 8px;
-            width: 200px;
-            margin-right: 10px;
-        }
-        .search-results {
-            margin-top: 10px;
-        }
-        .search-match {
-            padding: 5px;
-            background-color: #fff;
-            margin: 3px 0;
-            border-radius: 3px;
-        }
-        .perm-size-selector {
-            margin: 10px 0;
-        }
-        .cell-highlight {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: red;
-            display: none;
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Advanced 4x4 Grid Permutation Comparator</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 30px;
+    }
+    .grid-container {
+        width: 48%;
+    }
+    h2 {
+        text-align: center;
+        color: #333;
+    }
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 5px;
+        margin-bottom: 15px;
+    }
+    .cell {
+        border: 1px solid #ccc;
+        padding: 15px;
+        text-align: center;
+        font-weight: bold;
+        background-color: #f9f9f9;
+        position: relative;
+    }
+    .cell input {
+        width: 30px;
+        text-align: center;
+        font-weight: bold;
+        border: none;
+        background: transparent;
+    }
+    .controls {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    button {
+        padding: 8px 15px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+    .highlight {
+        background-color: #ffeb3b;
+        animation: pulse 1s;
+    }
+    @keyframes pulse {
+        0% { background-color: #ffeb3b; }
+        50% { background-color: #ffc107; }
+        100% { background-color: #ffeb3b; }
+    }
+    .comparison-results {
+        margin-top: 30px;
+        padding: 15px;
+        background-color: #e9f7ef;
+        border-radius: 5px;
+    }
+    .match-item {
+        margin-bottom: 10px;
+        padding: 10px;
+        background-color: #e3f2fd;
+        border-radius: 3px;
+    }
+    .search-container {
+        margin: 20px 0;
+        padding: 15px;
+        background-color: #f5f5f5;
+        border-radius: 5px;
+    }
+    .search-container input {
+        padding: 8px;
+        width: 200px;
+        margin-right: 10px;
+    }
+    .search-results {
+        margin-top: 10px;
+    }
+    .search-match {
+        padding: 5px;
+        background-color: #fff;
+        margin: 3px 0;
+        border-radius: 3px;
+    }
+    .perm-size-selector {
+        margin: 10px 0;
+    }
+    .cell-highlight {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: red;
+        display: none;
+    }
+</style>
 </head>
 <body>
-    <h1>Advanced 4x4 Grid Permutation Comparator</h1>
-    
-    <div class="controls">
-        <button id="compareBtn">Compare Permutations</button>
-        <button id="clearBtn">Clear All</button>
-        <button id="exampleBtn">Load Example</button>
-    </div>
-    
-    <div class="container">
-        <div class="grid-container">
-            <h2>Grid 1</h2>
-            <div class="grid" id="grid1"></div>
-        </div>
-        
-        <div class="grid-container">
-            <h2>Grid 2</h2>
-            <div class="grid" id="grid2"></div>
-        </div>
-    </div>
-    
-    <div class="search-container">
-        <h3>Pattern Search</h3>
-        <div class="perm-size-selector">
-            <label>Permutation Size:</label>
-            <select id="permSize">
-                <option value="2">2 numbers</option>
-                <option value="3">3 numbers</option>
-                <option value="4" selected>4 numbers</option>
-            </select>
-        </div>
-        <input type="text" id="searchInput" placeholder="Enter numbers (e.g., 123 or 1-2-3)">
-        <button id="searchBtn">Search</button>
-        <div class="search-results" id="searchResults"></div>
-    </div>
-    
-    <div class="comparison-results">
-        <h3>Permutation Comparison Results</h3>
-        <div id="comparisonResults"></div>
-    </div>
+<h1>Advanced 4x4 Grid Permutation Comparator</h1>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const grid1 = document.getElementById('grid1');
-            const grid2 = document.getElementById('grid2');
-            const compareBtn = document.getElementById('compareBtn');
-            const clearBtn = document.getElementById('clearBtn');
-            const exampleBtn = document.getElementById('exampleBtn');
-            const searchBtn = document.getElementById('searchBtn');
-            const searchInput = document.getElementById('searchInput');
-            const searchResults = document.getElementById('searchResults');
-            const comparisonResults = document.getElementById('comparisonResults');
-            const permSizeSelect = document.getElementById('permSize');
-            
-            // Initialize grids with input cells
-            function initializeGrid(gridElement, rows, cols) {
-                gridElement.innerHTML = '';
-                for (let i = 0; i < rows; i++) {
-                    for (let j = 0; j < cols; j++) {
-                        const cell = document.createElement('div');
-                        cell.className = 'cell';
-                        const input = document.createElement('input');
-                        input.type = 'text';
-                        input.maxLength = 1;
-                        input.dataset.row = i;
-                        input.dataset.col = j;
-                        cell.appendChild(input);
-                        
-                        // Add highlight indicator
-                        const highlight = document.createElement('div');
-                        highlight.className = 'cell-highlight';
-                        cell.appendChild(highlight);
-                        
-                        gridElement.appendChild(cell);
-                    }
-                }
+<div class="controls">
+    <button id="compareBtn">Compare Permutations</button>
+    <button id="clearBtn">Clear All</button>
+    <button id="exampleBtn">Load Example</button>
+</div>
+
+<div class="container">
+    <div class="grid-container">
+        <h2>Grid 1</h2>
+        <div class="grid" id="grid1"></div>
+    </div>
+    <div class="grid-container">
+        <h2>Grid 2</h2>
+        <div class="grid" id="grid2"></div>
+    </div>
+</div>
+
+<div class="search-container">
+    <h3>Pattern Search</h3>
+    <div class="perm-size-selector">
+        <label>Permutation Size:</label>
+        <select id="permSize">
+            <option value="2">2 numbers</option>
+            <option value="3">3 numbers</option>
+            <option value="4" selected>4 numbers</option>
+        </select>
+    </div>
+    <input type="text" id="searchInput" placeholder="Enter numbers (e.g., 123 or 1-2-3)">
+    <button id="searchBtn">Search</button>
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+<div class="comparison-results">
+    <h3>Permutation Comparison Results</h3>
+    <div id="comparisonResults"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const grid1 = document.getElementById('grid1');
+    const grid2 = document.getElementById('grid2');
+    const compareBtn = document.getElementById('compareBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const exampleBtn = document.getElementById('exampleBtn');
+    const searchBtn = document.getElementById('searchBtn');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const comparisonResults = document.getElementById('comparisonResults');
+    const permSizeSelect = document.getElementById('permSize');
+
+    // Initialize grid with input cells
+    function initializeGrid(gridElement, rows, cols) {
+        gridElement.innerHTML = '';
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.maxLength = 1;
+                input.dataset.row = i;
+                input.dataset.col = j;
+                cell.appendChild(input);
+
+                // Add highlight indicator
+                const highlight = document.createElement('div');
+                highlight.className = 'cell-highlight';
+                cell.appendChild(highlight);
+
+                gridElement.appendChild(cell);
             }
-            
-            // Get grid data as 2D array
-            function getGridData(gridElement) {
-                const inputs = gridElement.querySelectorAll('input');
-                const data = [[], [], [], []];
-                inputs.forEach(input => {
-                    const row = parseInt(input.dataset.row);
-                    const col = parseInt(input.dataset.col);
-                    data[row][col] = input.value !== '' ? parseInt(input.value) : 0;
-                });
-                return data;
-            }
-            
-            // Compare permutations between grids
-            function comparePermutations() {
-                removeHighlights();
-                
-                const grid1Data = getGridData(grid1);
-                const grid2Data = getGridData(grid2);
-                const permSize = parseInt(permSizeSelect.value);
-                
-                // Get all possible permutations in both grids
-                const grid1Perms = getAllPermutations(grid1Data, permSize);
-                const grid2Perms = getAllPermutations(grid2Data, permSize);
-                
-                // Compare permutations between grids
-                const matches = findMatchingPermutations(grid1Perms, grid2Perms);
-                
-                // Highlight matching permutations
-                highlightMatchingPermutations(grid1, matches.grid1Matches);
-                highlightMatchingPermutations(grid2, matches.grid2Matches);
-                
-                // Display comparison results
-                displayComparisonResults(matches.commonPerms, permSize);
-            }
-            
-            // Get all possible permutations of given size in a grid
-            function getAllPermutations(gridData, size) {
-                const permutations = [];
-                const positions = [];
-                
-                // Get all possible contiguous sequences (rows, columns, diagonals)
-                if (size === 4) {
-                    // Check all rows
-                    for (let row = 0; row < 4; row++) {
-                        const perm = gridData[row].slice();
-                        permutations.push({
-                            values: perm,
-                            positions: [[row, 0], [row, 1], [row, 2], [row, 3]]
-                        });
-                    }
-                    
-                    // Check all columns
-                    for (let col = 0; col < 4; col++) {
-                        const perm = [gridData[0][col], gridData[1][col], gridData[2][col], gridData[3][col]];
-                        permutations.push({
-                            values: perm,
-                            positions: [[0, col], [1, col], [2, col], [3, col]]
-                        });
-                    }
-                    
-                    // Check main diagonals
-                    const diag1 = [gridData[0][0], gridData[1][1], gridData[2][2], gridData[3][3]];
-                    permutations.push({
-                        values: diag1,
-                        positions: [[0, 0], [1, 1], [2, 2], [3, 3]]
-                    });
-                    
-                    const diag2 = [gridData[0][3], gridData[1][2], gridData[2][1], gridData[3][0]];
-                    permutations.push({
-                        values: diag2,
-                        positions: [[0, 3], [1, 2], [2, 1], [3, 0]]
-                    });
-                } else {
-                    // For smaller permutations, check all possible combinations
-                    for (let row = 0; row < 4; row++) {
-                        for (let col = 0; col < 4; col++) {
-                            // Horizontal right
-                            if (col + size <= 4) {
-                                const perm = [];
-                                const pos = [];
-                                for (let i = 0; i < size; i++) {
-                                    perm.push(gridData[row][col + i]);
-                                    pos.push([row, col + i]);
-                                }
-                                permutations.push({
-                                    values: perm,
-                                    positions: pos
-                                });
-                            }
-                            
-                            // Vertical down
-                            if (row + size <= 4) {
-                                const perm = [];
-                                const pos = [];
-                                for (let i = 0; i < size; i++) {
-                                    perm.push(gridData[row + i][col]);
-                                    pos.push([row + i, col]);
-                                }
-                                permutations.push({
-                                    values: perm,
-                                    positions: pos
-                                });
-                            }
-                            
-                            // Diagonal down-right
-                            if (row + size <= 4 && col + size <= 4) {
-                                const perm = [];
-                                const pos = [];
-                                for (let i = 0; i < size; i++) {
-                                    perm.push(gridData[row + i][col + i]);
-                                    pos.push([row + i, col + i]);
-                                }
-                                permutations.push({
-                                    values: perm,
-                                    positions: pos
-                                });
-                            }
-                            
-                            // Diagonal down-left
-                            if (row + size <= 4 && col - size + 1 >= 0) {
-                                const perm = [];
-                                const pos = [];
-                                for (let i = 0; i < size; i++) {
-                                    perm.push(gridData[row + i][col - i]);
-                                    pos.push([row + i, col - i]);
-                                }
-                                permutations.push({
-                                    values: perm,
-                                    positions: pos
-                                });
-                            }
-                        }
-                    }
-                }
-                
-                // Add sorted versions for comparison
-                const enhancedPerms = permutations.map(perm => {
-                    const sorted = [...perm.values].sort((a, b) => a - b);
-                    return {
-                        ...perm,
-                        sorted: sorted,
-                        key: sorted.join(',')
-                    };
-                });
-                
-                return enhancedPerms;
-            }
-            
-            // Find matching permutations between grids
-            function findMatchingPermutations(perms1, perms2) {
-                const commonPerms = {};
-                const grid1Matches = {};
-                const grid2Matches = {};
-                
-                // Create a map of all permutations in grid1
-                const grid1Map = {};
-                perms1.forEach((perm, index) => {
-                    if (!grid1Map[perm.key]) {
-                        grid1Map[perm.key] = [];
-                    }
-                    grid1Map[perm.key].push(perm);
-                });
-                
-                // Find matches in grid2
-                perms2.forEach(perm2 => {
-                    if (grid1Map[perm2.key]) {
-                        if (!commonPerms[perm2.key]) {
-                            commonPerms[perm2.key] = {
-                                values: perm2.sorted,
-                                grid1: [],
-                                grid2: []
-                            };
-                        }
-                        
-                        // Add all matching permutations from grid1
-                        grid1Map[perm2.key].forEach(perm1 => {
-                            commonPerms[perm2.key].grid1.push({
-                                positions: perm1.positions,
-                                original: perm1.values
-                            });
-                            
-                            // Record positions for highlighting
-                            perm1.positions.forEach(pos => {
-                                const [row, col] = pos;
-                                const key = `${row},${col}`;
-                                grid1Matches[key] = true;
-                            });
-                        });
-                        
-                        // Add current permutation from grid2
-                        commonPerms[perm2.key].grid2.push({
-                            positions: perm2.positions,
-                            original: perm2.values
-                        });
-                        
-                        // Record positions for highlighting
-                        perm2.positions.forEach(pos => {
-                            const [row, col] = pos;
-                            const key = `${row},${col}`;
-                            grid2Matches[key] = true;
-                        });
-                    }
-                });
-                
-                return {
-                    commonPerms: commonPerms,
-                    grid1Matches: grid1Matches,
-                    grid2Matches: grid2Matches
-                };
-            }
-            
-            // Highlight matching permutations in a grid
-            function highlightMatchingPermutations(gridElement, matches) {
-                const cells = gridElement.querySelectorAll('.cell');
-                
-                cells.forEach((cell, index) => {
-                    const row = Math.floor(index / 4);
-                    const col = index % 4;
-                    const key = `${row},${col}`;
-                    
-                    if (matches[key]) {
-                        cell.classList.add('highlight');
-                        cell.querySelector('.cell-highlight').style.display = 'block';
-                    }
-                });
-            }
-            
-            // Display comparison results
-            function displayComparisonResults(commonPerms, permSize) {
-                comparisonResults.innerHTML = '';
-                
-                if (Object.keys(commonPerms).length === 0) {
-                    comparisonResults.innerHTML = '<p>No matching permutations found between grids.</p>';
-                    return;
-                }
-                
-                comparisonResults.innerHTML = `<p>Found ${Object.keys(commonPerms).length} matching ${permSize}-number patterns:</p>`;
-                
-                Object.keys(commonPerms).forEach(key => {
-                    const match = commonPerms[key];
-                    const div = document.createElement('div');
-                    div.className = 'match-item';
-                    
-                    let grid1Locations = match.grid1.map(g => {
-                        const pos = g.positions.map(p => `(${p[0]+1},${p[1]+1})`).join(' ');
-                        return `${pos} [${g.original.join(',')}]`;
-                    }).join('; ');
-                    
-                    let grid2Locations = match.grid2.map(g => {
-                        const pos = g.positions.map(p => `(${p[0]+1},${p[1]+1})`).join(' ');
-                        return `${pos} [${g.original.join(',')}]`;
-                    }).join('; ');
-                    
-                    div.innerHTML = `
-                        <strong>Pattern:</strong> [${match.values.join(', ')}]<br>
-                        <strong>Grid 1:</strong> ${grid1Locations}<br>
-                        <strong>Grid 2:</strong> ${grid2Locations}
-                    `;
-                    comparisonResults.appendChild(div);
-                });
-            }
-            
-            // Search for patterns in grids
-            function searchPatterns() {
-                const searchTerm = searchInput.value.trim();
-                if (!searchTerm) return;
-                
-                const grid1Data = getGridData(grid1);
-                const grid2Data = getGridData(grid2);
-                const permSize = parseInt(permSizeSelect.value);
-                
-                // Normalize search term (handle both "123" and "1-2-3" formats)
-                const searchPattern = searchTerm.includes('-') 
-                    ? searchTerm.split('-').map(Number)
-                    : searchTerm.split('').map(Number);
-                
-                if (searchPattern.length !== permSize) {
-                    searchResults.innerHTML = '<div class="search-match">Pattern length does not match selected permutation size</div>';
-                    return;
-                }
-                
-                searchResults.innerHTML = '';
-                
-                // Get all permutations in both grids
-                const grid1Perms = getAllPermutations(grid1Data, permSize);
-                const grid2Perms = getAllPermutations(grid2Data, permSize);
-                
-                // Sort the search pattern for comparison
-                const searchKey = [...searchPattern].sort((a, b) => a - b).join(',');
-                
-                // Search in Grid 1
-                const grid1Matches = grid1Perms
-                    .filter(perm => perm.key === searchKey)
-                    .map(perm => {
-                        const pos = perm.positions.map(p => `(${p[0]+1},${p[1]+1})`).join(' ');
-                        return `${pos} [${perm.values.join(',')}]`;
-                    });
-                
-                if (grid1Matches.length > 0) {
-                    const div = document.createElement('div');
-                    div.className = 'search-match';
-                    div.innerHTML = `<strong>Grid 1 matches:</strong> ${grid1Matches.join('; ')}`;
-                    searchResults.appendChild(div);
-                }
-                
-                // Search in Grid 2
-                const grid2Matches = grid2Perms
-                    .filter(perm => perm.key === searchKey)
-                    .map(perm => {
-                        const pos = perm.positions.map(p => `(${p[0]+1},${p[1]+1})`).join(' ');
-                        return `${pos} [${perm.values.join(',')}]`;
-                    });
-                
-                if (grid2Matches.length > 0) {
-                    const div = document.createElement('div');
-                    div.className = 'search-match';
-                    div.innerHTML = `<strong>Grid 2 matches:</strong> ${grid2Matches.join('; ')}`;
-                    searchResults.appendChild(div);
-                }
-                
-                if (grid1Matches.length === 0 && grid2Matches.length === 0) {
-                    searchResults.innerHTML = '<div class="search-match">No matches found for this pattern</div>';
-                }
-            }
-            
-            function removeHighlights() {
-                document.querySelectorAll('.highlight').forEach(el => {
-                    el.classList.remove('highlight');
-                });
-                document.querySelectorAll('.cell-highlight').forEach(el => {
-                    el.style.display = 'none';
-                });
-            }
-            
-            function clearAll() {
-                initializeGrid(grid1, 4, 4);
-                initializeGrid(grid2, 4, 4);
-                comparisonResults.innerHTML = '';
-                searchResults.innerHTML = '';
-                searchInput.value = '';
-                removeHighlights();
-            }
-            
-            function loadExample() {
-                clearAll();
-                
-                // Example data with various permutation types
-                const exampleGrid1 = [
-                    [2, 3, 4, 5],
-                    [6, 8, 7, 8],
-                    [1, 1, 2, 2],
-                    [3, 3, 3, 1]
-                ];
-                
-                const exampleGrid2 = [
-                    [5, 4, 3, 2], // Same sorted as grid1 row1
-                    [8, 7, 8, 6], // Same sorted as grid1 row2
-                    [2, 1, 2, 1], // Same sorted as grid1 row3
-                    [1, 3, 3, 3]  // Same sorted as grid1 row4
-                ];
-                
-                // Fill grid1
-                const inputs1 = grid1.querySelectorAll('input');
-                exampleGrid1.forEach((row, i) => {
-                    row.forEach((val, j) => {
-                        const index = i * 4 + j;
-                        if (inputs1[index]) inputs1[index].value = val;
-                    });
-                });
-                
-                // Fill grid2
-                const inputs2 = grid2.querySelectorAll('input');
-                exampleGrid2.forEach((row, i) => {
-                    row.forEach((val, j) => {
-                        const index = i * 4 + j;
-                        if (inputs2[index]) inputs2[index].value = val;
-                    });
-                });
-            }
-            
-            // Event listeners
-            compareBtn.addEventListener('click', comparePermutations);
-            clearBtn.addEventListener('click', clearAll);
-            exampleBtn.addEventListener('click', loadExample);
-            searchBtn.addEventListener('click', searchPatterns);
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') searchPatterns();
-            });
-            
-            // Initialize
-            initializeGrid(grid1, 4, 4);
-            initializeGrid(grid2, 4, 4);
+        }
+    }
+
+    // Get grid data as 2D array
+    function getGridData(gridElement) {
+        const inputs = gridElement.querySelectorAll('input');
+        const data = [[], [], [], []];
+        inputs.forEach(input => {
+            const row = parseInt(input.dataset.row);
+            const col = parseInt(input.dataset.col);
+            data[row][col] = input.value !== '' ? parseInt(input.value) : 0;
         });
-    </script>
+        return data;
+    }
+
+    // Compare permutations
+    function comparePermutations() {
+        removeHighlights();
+
+        const grid1Data = getGridData(grid1);
+        const grid2Data = getGridData(grid2);
+        const permSize = parseInt(permSizeSelect.value);
+
+        const grid1Perms = getAllPermutations(grid1Data, permSize);
+        const grid2Perms = getAllPermutations(grid2Data, permSize);
+
+        const matches = findMatchingPermutations(grid1Perms, grid2Perms);
+
+        // Prepare permutations to highlight
+        const grid1PermsToHighlight = [];
+        Object.values(matches.commonPerms).forEach(item => {
+            grid1PermsToHighlight.push(...item.grid1);
+        });
+        const grid2PermsToHighlight = [];
+        Object.values(matches.commonPerms).forEach(item => {
+            grid2PermsToHighlight.push(...item.grid2);
+        });
+
+        // Highlight the matching permutations
+        highlightMatchingPermutations(grid1, grid1PermsToHighlight);
+        highlightMatchingPermutations(grid2, grid2PermsToHighlight);
+
+        // Display results
+        displayComparisonResults(matches.commonPerms, permSize);
+    }
+
+    // Get all permutations in grid data of given size
+    function getAllPermutations(gridData, size) {
+        const permutations = [];
+
+        if (size === 4) {
+            // Rows
+            for (let row = 0; row < 4; row++) {
+                const perm = gridData[row].slice();
+                permutations.push({
+                    values: perm,
+                    positions: [[row,0],[row,1],[row,2],[row,3]]
+                });
+            }
+            // Columns
+            for (let col = 0; col < 4; col++) {
+                const perm = [gridData[0][col], gridData[1][col], gridData[2][col], gridData[3][col]];
+                permutations.push({
+                    values: perm,
+                    positions: [[0,col],[1,col],[2,col],[3,col]]
+                });
+            }
+            // Diagonals
+            permutations.push({
+                values: [gridData[0][0], gridData[1][1], gridData[2][2], gridData[3][3]],
+                positions: [[0,0],[1,1],[2,2],[3,3]]
+            });
+            permutations.push({
+                values: [gridData[0][3], gridData[1][2], gridData[2][1], gridData[3][0]],
+                positions: [[0,3],[1,2],[2,1],[3,0]]
+            });
+        } else {
+            // For smaller sizes, check all possible segments
+            for (let row = 0; row < 4; row++) {
+                for (let col = 0; col < 4; col++) {
+                    // Horizontal right
+                    if (col + size <= 4) {
+                        const perm = [];
+                        const pos = [];
+                        for (let i=0; i<size; i++) {
+                            perm.push(gridData[row][col+i]);
+                            pos.push([row, col+i]);
+                        }
+                        permutations.push({values: perm, positions: pos});
+                    }
+                    // Vertical down
+                    if (row + size <= 4) {
+                        const perm = [];
+                        const pos = [];
+                        for (let i=0; i<size; i++) {
+                            perm.push(gridData[row+i][col]);
+                            pos.push([row+i, col]);
+                        }
+                        permutations.push({values: perm, positions: pos});
+                    }
+                    // Diagonal down-right
+                    if (row + size <= 4 && col + size <=4) {
+                        const perm = [], pos = [];
+                        for (let i=0; i<size; i++) {
+                            perm.push(gridData[row+i][col+i]);
+                            pos.push([row+i, col+i]);
+                        }
+                        permutations.push({values: perm, positions: pos});
+                    }
+                    // Diagonal down-left
+                    if (row + size <= 4 && col - size +1 >=0) {
+                        const perm = [], pos = [];
+                        for (let i=0; i<size; i++) {
+                            perm.push(gridData[row+i][col - i]);
+                            pos.push([row+i, col - i]);
+                        }
+                        permutations.push({values: perm, positions: pos});
+                    }
+                }
+            }
+        }
+
+        // Create sorted key for comparison
+        return permutations.map(p => {
+            const sortedValues = [...p.values].sort((a,b)=>a-b);
+            return {
+                ...p,
+                sorted: sortedValues,
+                key: sortedValues.join(',')
+            };
+        });
+    }
+
+    // Find matching permutations between two grids
+    function findMatchingPermutations(perms1, perms2) {
+        const commonPerms = {};
+        const grid1Matches = {}; // for highlighting
+        const grid2Matches = {};
+
+        const map1 = {};
+        perms1.forEach((perm, index) => {
+            if (!map1[perm.key]) map1[perm.key]=[];
+            map1[perm.key].push(perm);
+        });
+
+        perms2.forEach(perm2 => {
+            if (map1[perm2.key]) {
+                if (!commonPerms[perm2.key]) {
+                    commonPerms[perm2.key]={
+                        values: perm2.sorted,
+                        grid1: [],
+                        grid2: []
+                    };
+                }
+                // Add all matching perms from grid1
+                map1[perm2.key].forEach(perm1 => {
+                    commonPerms[perm2.key].grid1.push({positions:perm1.positions, original:perm1.values});
+                    // mark positions for highlight
+                    perm1.positions.forEach(p => {
+                        const key = p[0]+','+p[1];
+                        grid1Matches[key]=true;
+                    });
+                });
+                // Add current perm2
+                commonPerms[perm2.key].grid2.push({positions:perm2.positions, original:perm2.values});
+                perm2.positions.forEach(p => {
+                    const key = p[0]+','+p[1];
+                    grid2Matches[key]=true;
+                });
+            }
+        });
+        return {commonPerms, grid1Matches, grid2Matches};
+    }
+
+    // Highlight matching permutations based on positions
+    function highlightMatchingPermutations(gridElement, permutations) {
+        const cells = gridElement.querySelectorAll('.cell');
+        // Clear previous highlights
+        cells.forEach(cell => {
+            cell.classList.remove('highlight');
+            cell.querySelector('.cell-highlight').style.display = 'none';
+        });
+        // Highlight the positions
+        permutations.forEach(perm => {
+            perm.positions.forEach(pos => {
+                const [row, col] = pos;
+                const index = row*4 + col;
+                const cell = cells[index];
+                cell.classList.add('highlight');
+                cell.querySelector('.cell-highlight').style.display = 'block';
+            });
+        });
+    }
+
+    // Display comparison results
+    function displayComparisonResults(commonPerms, permSize) {
+        comparisonResults.innerHTML = '';
+        const count = Object.keys(commonPerms).length;
+        if (count===0) {
+            comparisonResults.innerHTML = '<p>No matching permutations found between grids.</p>';
+            return;
+        }
+        comparisonResults.innerHTML = `<p>Found ${count} matching ${permSize}-number patterns:</p>`;
+        Object.keys(commonPerms).forEach(key => {
+            const match = commonPerms[key];
+            const div = document.createElement('div');
+            div.className='match-item';
+
+            let grid1Locations = match.grid1.map(g => {
+                const posStr = g.positions.map(p => `(${p[0]+1},${p[1]+1})`).join(' ');
+                return `${posStr} [${g.original.join(',')}]`;
+            }).join('; ');
+
+            let grid2Locations = match.grid2.map(g => {
+                const posStr = g.positions.map(p => `(${p[0]+1},${p[1]+1})`).join(' ');
+                return `${posStr} [${g.original.join(',')}]`;
+            }).join('; ');
+
+            div.innerHTML = `
+                <strong>Pattern:</strong> [${match.values.join(', ')}]<br>
+                <strong>Grid 1:</strong> ${grid1Locations}<br>
+                <strong>Grid 2:</strong> ${grid2Locations}
+            `;
+            comparisonResults.appendChild(div);
+        });
+    }
+
+    // Search for patterns
+    function searchPatterns() {
+        const searchTerm = searchInput.value.trim();
+        if (!searchTerm) return;
+        const grid1Data = getGridData(grid1);
+        const grid2Data = getGridData(grid2);
+        const permSize = parseInt(permSizeSelect.value);
+        const searchPattern = searchTerm.includes('-') 
+            ? searchTerm.split('-').map(Number)
+            : searchTerm.split('').map(Number);
+        if (searchPattern.length !== permSize) {
+            searchResults.innerHTML = '<div class="search-match">Pattern length does not match selected permutation size</div>';
+            return;
+        }
+        searchResults.innerHTML = '';
+
+        const grid1Perms = getAllPermutations(grid1Data, permSize);
+        const grid2Perms = getAllPermutations(grid2Data, permSize);
+        const searchKey = [...searchPattern].sort((a,b)=>a-b).join(',');
+
+        // Search in grid1
+        const g1Matches = grid1Perms.filter(p => p.key===searchKey);
+        if (g1Matches.length>0) {
+            const posStrs = g1Matches.map(p => {
+                const posStr = p.positions.map(p => `(${p[0]+1},${p[1]+1})`).join(' ');
+                return `${posStr} [${p.values.join(',')}]`;
+            });
+            const div = document.createElement('div');
+            div.className='search-match';
+            div.innerHTML=`<strong>Grid 1 matches:</strong> ${posStrs.join('; ')}`;
+            searchResults.appendChild(div);
+        }
+
+        // Search in grid2
+        const g2Matches = grid2Perms.filter(p => p.key===searchKey);
+        if (g2Matches.length>0) {
+            const posStrs = g2Matches.map(p => {
+                const posStr = p.positions.map(p => `(${p[0]+1},${p[1]+1})`).join(' ');
+                return `${posStr} [${p.values.join(',')}]`;
+            });
+            const div = document.createElement('div');
+            div.className='search-match';
+            div.innerHTML=`<strong>Grid 2 matches:</strong> ${posStrs.join('; ')}`;
+            searchResults.appendChild(div);
+        }
+
+        if (g1Matches.length===0 && g2Matches.length===0) {
+            searchResults.innerHTML = '<div class="search-match">No matches found for this pattern</div>';
+        }
+    }
+
+    function removeHighlights() {
+        document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+        document.querySelectorAll('.cell-highlight').forEach(el => el.style.display='none');
+    }
+
+    function clearAll() {
+        initializeGrid(grid1, 4, 4);
+        initializeGrid(grid2, 4, 4);
+        comparisonResults.innerHTML = '';
+        searchResults.innerHTML = '';
+        searchInput.value = '';
+        removeHighlights();
+    }
+
+    function loadExample() {
+        clearAll();
+        // Example data
+        const exampleGrid1 = [
+            [2, 3, 4, 5],
+            [6, 8, 7, 8],
+            [1, 1, 2, 2],
+            [3, 3, 3, 1]
+        ];
+        const exampleGrid2 = [
+            [5, 4, 3, 2],
+            [8, 7, 8, 6],
+            [2, 1, 2, 1],
+            [1, 3, 3, 3]
+        ];
+
+        // Fill grid1
+        const inputs1 = grid1.querySelectorAll('input');
+        exampleGrid1.forEach((row, i) => {
+            row.forEach((val, j) => {
+                const index = i*4 + j;
+                if (inputs1[index]) inputs1[index].value=val;
+            });
+        });
+        // Fill grid2
+        const inputs2=grid2.querySelectorAll('input');
+        exampleGrid2.forEach((row, i) => {
+            row.forEach((val, j) => {
+                const index = i*4 + j;
+                if (inputs2[index]) inputs2[index].value=val;
+            });
+        });
+    }
+
+    // Event listeners
+    document.getElementById('compareBtn').addEventListener('click', comparePermutations);
+    document.getElementById('clearBtn').addEventListener('click', clearAll);
+    document.getElementById('exampleBtn').addEventListener('click', loadExample);
+    document.getElementById('searchBtn').addEventListener('click', searchPatterns);
+    document.getElementById('searchInput').addEventListener('keypress', e => {
+        if (e.key==='Enter') searchPatterns();
+    });
+
+    // Initialize empty grids
+    initializeGrid(grid1, 4, 4);
+    initializeGrid(grid2, 4, 4);
+});
+</script>
 </body>
 </html>
