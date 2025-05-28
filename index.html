@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Comparison Charts with Search</title>
+<title>Compare 4x4 Grids and Generate Combinations</title>
 <style>
   body { font-family: Arial, sans-serif; padding: 20px; }
   h2 { margin-top: 30px; }
@@ -13,20 +13,21 @@
   button { padding: 10px 20px; font-size: 16px; margin-top: 10px; }
   #controls { margin-top: 20px; display: flex; align-items: center; gap: 10px; }
   #searchInput { padding: 8px; width: 300px; font-size: 16px; }
-  #combinations { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 5px; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
-  .combo { padding: 5px 10px; background-color: #f0f0f0; border-radius: 4px; font-family: monospace; }
-  #total { margin-top: 10px; font-weight: bold; }
+  #combinations { margin-top: 20px; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
+  .combo { padding: 5px 10px; background-color: #f0f0f0; border-radius: 4px; font-family: monospace; margin: 2px 0; }
+  .grid-section { margin-bottom: 30px; }
 </style>
 </head>
 <body>
 
-<h1>Comparison Charts with Search</h1>
+<h1>Compare 4x4 Grids and Generate All Possible Combinations</h1>
 
 <div class="grids">
   <!-- First Grid -->
-  <div>
+  <div class="grid-section">
     <h2>Grid 1</h2>
     <div class="grid" id="grid1">
+      <!-- 16 inputs -->
       <input type="text" maxlength="1" />
       <input type="text" maxlength="1" />
       <input type="text" maxlength="1" />
@@ -46,9 +47,10 @@
     </div>
   </div>
   <!-- Second Grid -->
-  <div>
+  <div class="grid-section">
     <h2>Grid 2</h2>
     <div class="grid" id="grid2">
+      <!-- 16 inputs -->
       <input type="text" maxlength="1" />
       <input type="text" maxlength="1" />
       <input type="text" maxlength="1" />
@@ -72,100 +74,149 @@
 <div id="controls">
   <button id="generateBtn">Generate Combinations</button>
   <button id="resetBtn">Reset</button>
-  <input type="text" id="searchInput" placeholder="Search combinations containing digits..." />
+  <input type="text" id="searchInput" placeholder="Search combinations..." />
 </div>
 
-<div id="total">Total Combinations: 0</div>
+<h3>Generated Combinations for Grid 1</h3>
+<div id="combinations1" style="max-height:200px; overflow-y:auto; border:1px solid #ccc; padding:10px;"></div>
 
-<!-- List of combinations -->
-<div id="combinations"></div>
+<h3>Generated Combinations for Grid 2</h3>
+<div id="combinations2" style="max-height:200px; overflow-y:auto; border:1px solid #ccc; padding:10px;"></div>
+
+<div>
+  <h3>Search Results</h3>
+  <div id="searchResults" style="max-height:200px; overflow-y:auto; border:1px solid #ccc; padding:10px;"></div>
+</div>
 
 <script>
-const totalNumbers = 256; // 0000 to 0255
-const allNumbers = Array.from({length: totalNumbers}, (_, i) => i.toString().padStart(4, '0'));
-
 const grid1Inputs = document.querySelectorAll('#grid1 input');
 const grid2Inputs = document.querySelectorAll('#grid2 input');
-const combosContainer = document.getElementById('combinations');
-const totalDisplay = document.getElementById('total');
+const combinationsDiv1 = document.getElementById('combinations1');
+const combinationsDiv2 = document.getElementById('combinations2');
 const searchInput = document.getElementById('searchInput');
+const searchResultsDiv = document.getElementById('searchResults');
 
-let currentCombinations = [];
+let grid1Options = []; // Options per position
+let grid2Options = [];
+let grid1Combinations = [];
+let grid2Combinations = [];
 
-// Generate all combinations based on grid inputs
-function generateCombinations() {
-  // Read input values for both grids
-  const grid1Values = Array.from(grid1Inputs).map(input => input.value.trim());
-  const grid2Values = Array.from(grid2Inputs).map(input => input.value.trim());
-
-  // Validate inputs: each should be a digit 0-9 or empty
-  const isValidDigit = val => /^[0-9]$/.test(val);
-  if (!grid1Values.every(val => val === '' || isValidDigit(val)) ||
-      !grid2Values.every(val => val === '' || isValidDigit(val))) {
-    alert('Please enter digits 0-9 or leave empty.');
-    return;
+// Generate all options per grid based on inputs
+function getOptions(inputs) {
+  const options = [];
+  for (let i=0; i<16; i++) {
+    const val = inputs[i].value.trim();
+    if (val === '') {
+      options.push(['0','1','2','3','4','5','6','7','8','9']); // all digits if empty
+    } else if (/^[0-9]$/.test(val)) {
+      options.push([val]);
+    } else {
+      // invalid input, treat as empty
+      options.push(['0','1','2','3','4','5','6','7','8','9']);
+    }
   }
-
-  // If both grids are empty, show all combinations
-  if (grid1Values.every(v => v === '') && grid2Values.every(v => v === '')) {
-    currentCombinations = [...allNumbers];
-  } else {
-    // Filter combinations based on inputs
-    currentCombinations = allNumbers.filter(number => {
-      return (
-        (grid1Values.every((val, i) => val === '' || number[i] === val)) &&
-        (grid2Values.every((val, i) => val === '' || number[i] === val))
-      );
-    });
-  }
-
-  displayCombinations();
+  return options;
 }
 
-// Display the filtered combinations
-function displayCombinations() {
-  combosContainer.innerHTML = '';
-  currentCombinations.forEach(comb => {
+// Generate all combinations from options
+function generateAllCombinations(options) {
+  const results = [];
+  function recurse(current, index) {
+    if (index === options.length) {
+      results.push(current.join(''));
+      return;
+    }
+    for (const digit of options[index]) {
+      recurse([...current, digit], index + 1);
+    }
+  }
+  recurse([], 0);
+  return results;
+}
+
+function generate() {
+  // Get options for each grid
+  grid1Options = getOptions(grid1Inputs);
+  grid2Options = getOptions(grid2Inputs);
+  
+  // Generate all combinations
+  grid1Combinations = generateAllCombinations(grid1Options);
+  grid2Combinations = generateAllCombinations(grid2Options);
+  
+  // Display for grid 1
+  combinationsDiv1.innerHTML = '';
+  grid1Combinations.forEach(c => {
     const div = document.createElement('div');
     div.className = 'combo';
-    div.textContent = comb;
-    combosContainer.appendChild(div);
+    div.textContent = c;
+    combinationsDiv1.appendChild(div);
   });
-  totalDisplay.textContent = `Total Combinations: ${currentCombinations.length}`;
+  
+  // Display for grid 2
+  combinationsDiv2.innerHTML = '';
+  grid2Combinations.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'combo';
+    div.textContent = c;
+    combinationsDiv2.appendChild(div);
+  });
+  
+  // Clear search results
+  document.getElementById('searchResults').innerHTML = '';
 }
 
-// Reset inputs and list
+// Reset inputs and outputs
 function reset() {
   document.querySelectorAll('input[type=text]').forEach(input => input.value = '');
-  currentCombinations = [...allNumbers];
-  displayCombinations();
-  searchInput.value = '';
+  combinationsDiv1.innerHTML = '';
+  combinationsDiv2.innerHTML = '';
+  document.getElementById('searchResults').innerHTML = '';
 }
 
-// Filter displayed combinations based on search
+// Search filter
 searchInput.addEventListener('input', () => {
-  const searchTerm = searchInput.value.trim();
-  if (searchTerm === '') {
-    displayCombinations();
+  const term = searchInput.value.trim();
+  if (term === '') {
+    // Show all combinations for both grids
+    combinationsDiv1.innerHTML = '';
+    grid1Combinations.forEach(c => addCombo(c, combinationsDiv1));
+    combinationsDiv2.innerHTML = '';
+    grid2Combinations.forEach(c => addCombo(c, combinationsDiv2));
+    document.getElementById('searchResults').innerHTML = '';
   } else {
-    const filtered = currentCombinations.filter(c => c.includes(searchTerm));
-    combosContainer.innerHTML = '';
-    filtered.forEach(comb => {
-      const div = document.createElement('div');
-      div.className = 'combo';
-      div.textContent = comb;
-      combosContainer.appendChild(div);
-    });
-    totalDisplay.textContent = `Total Combinations: ${filtered.length}`;
+    // Filter both lists
+    const filtered1 = grid1Combinations.filter(c => c.includes(term));
+    const filtered2 = grid2Combinations.filter(c => c.includes(term));
+    // Show in searchResults
+    document.getElementById('searchResults').innerHTML = '';
+    if (filtered1.length > 0) {
+      const title = document.createElement('div');
+      title.innerHTML = '<strong>Grid 1 Matches:</strong>';
+      document.getElementById('searchResults').appendChild(title);
+      filtered1.forEach(c => addCombo(c, document.getElementById('searchResults')));
+    }
+    if (filtered2.length > 0) {
+      const title = document.createElement('div');
+      title.innerHTML = '<strong>Grid 2 Matches:</strong>';
+      document.getElementById('searchResults').appendChild(title);
+      filtered2.forEach(c => addCombo(c, document.getElementById('searchResults')));
+    }
   }
 });
 
-document.getElementById('generateBtn').addEventListener('click', generateCombinations);
+function addCombo(c, container) {
+  const div = document.createElement('div');
+  div.className = 'combo';
+  div.textContent = c;
+  container.appendChild(div);
+}
+
+document.getElementById('generateBtn').addEventListener('click', generate);
 document.getElementById('resetBtn').addEventListener('click', reset);
 
-// Initialize with all combinations
+// Initialize with empty grids
 reset();
-</script>
 
+</script>
 </body>
 </html>
