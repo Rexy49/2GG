@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>4x4 Grid Permutation Comparator</title>
+    <title>Manual 4x4 Grid Permutation Comparator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,6 +35,13 @@
             text-align: center;
             font-weight: bold;
             background-color: #f9f9f9;
+        }
+        .cell input {
+            width: 30px;
+            text-align: center;
+            font-weight: bold;
+            border: none;
+            background: transparent;
         }
         .controls {
             display: flex;
@@ -75,160 +82,257 @@
             background-color: #e9f7ef;
             border-radius: 5px;
         }
+        .permutation-type {
+            margin-top: 10px;
+            padding: 5px;
+            background-color: #e3f2fd;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
-    <h1>4x4 Grid Permutation Comparator</h1>
+    <h1>Manual 4x4 Grid Permutation Comparator</h1>
     
     <div class="controls">
-        <button id="generateBtn">Generate New Grids</button>
-        <button id="highlightBtn">Highlight Matching Permutations</button>
+        <button id="compareBtn">Compare Permutations</button>
+        <button id="clearBtn">Clear All</button>
+        <button id="exampleBtn">Load Example</button>
     </div>
     
     <div class="container">
         <div class="grid-container">
-            <h2>Grid 1: Full Row Permutations (24/12/6/4/1)</h2>
+            <h2>Grid 1: Original Permutations</h2>
             <div class="grid" id="grid1"></div>
             <div class="stats" id="stats1"></div>
+            <div id="permTypes1"></div>
         </div>
         
         <div class="grid-container">
-            <h2>Grid 2: Sorted Rows (Unique Permutations)</h2>
+            <h2>Grid 2: Original Permutations</h2>
             <div class="grid" id="grid2"></div>
             <div class="stats" id="stats2"></div>
+            <div id="permTypes2"></div>
         </div>
     </div>
     
     <div class="permutation-info">
-        <h3>About Permutation Patterns:</h3>
-        <p>This tool demonstrates how different sorting approaches affect the appearance of identical permutations in 4x4 grids.</p>
-        <ul>
-            <li><strong>Grid 1</strong> shows all possible row permutations (24 for unique numbers, 12 when two numbers match, etc.)</li>
-            <li><strong>Grid 2</strong> shows each row sorted in ascending order, revealing the underlying permutation patterns</li>
-            <li>Identical permutations will appear different in Grid 1 but identical in Grid 2 when highlighted</li>
-        </ul>
+        <h3>Permutation Comparison Results</h3>
+        <div id="comparisonResults"></div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const grid1 = document.getElementById('grid1');
             const grid2 = document.getElementById('grid2');
-            const generateBtn = document.getElementById('generateBtn');
-            const highlightBtn = document.getElementById('highlightBtn');
+            const compareBtn = document.getElementById('compareBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const exampleBtn = document.getElementById('exampleBtn');
             const stats1 = document.getElementById('stats1');
             const stats2 = document.getElementById('stats2');
+            const permTypes1 = document.getElementById('permTypes1');
+            const permTypes2 = document.getElementById('permTypes2');
+            const comparisonResults = document.getElementById('comparisonResults');
             
-            let currentGrid1 = [];
-            let currentGrid2 = [];
-            
-            generateBtn.addEventListener('click', generateGrids);
-            highlightBtn.addEventListener('click', highlightMatches);
-            
-            function generateGrids() {
-                // Clear previous grids and highlights
-                grid1.innerHTML = '';
-                grid2.innerHTML = '';
-                removeHighlights();
-                
-                // Generate Grid 1 with random permutations
-                currentGrid1 = [];
-                const numbers = [1, 2, 3, 4];
-                
-                // Generate 4 rows with different permutation types
-                currentGrid1.push(shuffleArray([...numbers])); // 24 permutations (all unique)
-                currentGrid1.push(createPermutationWithDuplicates([...numbers], 2)); // 12 permutations (one duplicate)
-                currentGrid1.push(createPermutationWithDuplicates([...numbers], 3)); // 6 permutations (three same)
-                currentGrid1.push([...numbers].fill(numbers[0])); // 1 permutation (all same)
-                
-                // Generate Grid 2 with sorted versions of Grid 1's permutations
-                currentGrid2 = currentGrid1.map(row => [...row].sort((a, b) => a - b));
-                
-                // Display the grids
-                displayGrid(grid1, currentGrid1);
-                displayGrid(grid2, currentGrid2);
-                
-                // Update statistics
-                updateStats();
-            }
-            
-            function displayGrid(gridElement, gridData) {
-                gridData.forEach(row => {
-                    row.forEach(num => {
+            // Initialize grids with input cells
+            function initializeGrid(gridElement, rows, cols) {
+                gridElement.innerHTML = '';
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < cols; j++) {
                         const cell = document.createElement('div');
                         cell.className = 'cell';
-                        cell.textContent = num;
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.maxLength = 1;
+                        input.dataset.row = i;
+                        input.dataset.col = j;
+                        cell.appendChild(input);
                         gridElement.appendChild(cell);
+                    }
+                }
+            }
+            
+            // Get grid data as 2D array
+            function getGridData(gridElement) {
+                const inputs = gridElement.querySelectorAll('input');
+                const data = [[], [], [], []];
+                inputs.forEach(input => {
+                    const row = parseInt(input.dataset.row);
+                    const col = parseInt(input.dataset.col);
+                    data[row][col] = input.value !== '' ? parseInt(input.value) : 0;
+                });
+                return data;
+            }
+            
+            // Compare permutations between grids
+            function comparePermutations() {
+                removeHighlights();
+                
+                const grid1Data = getGridData(grid1);
+                const grid2Data = getGridData(grid2);
+                
+                // Analyze permutation types for each grid
+                const grid1Perms = analyzePermutations(grid1Data);
+                const grid2Perms = analyzePermutations(grid2Data);
+                
+                // Display permutation types
+                displayPermutationTypes(permTypes1, grid1Perms, "Grid 1");
+                displayPermutationTypes(permTypes2, grid2Perms, "Grid 2");
+                
+                // Compare grids and find matching permutations
+                const matches = findMatchingPermutations(grid1Perms, grid2Perms);
+                
+                // Highlight matching permutations
+                highlightMatchingPermutations(grid1, grid1Perms, matches);
+                highlightMatchingPermutations(grid2, grid2Perms, matches);
+                
+                // Display comparison results
+                displayComparisonResults(matches, grid1Perms, grid2Perms);
+                
+                // Update statistics
+                updateStats(grid1Perms, grid2Perms);
+            }
+            
+            // Analyze permutation types in a grid
+            function analyzePermutations(gridData) {
+                const permutations = [];
+                
+                gridData.forEach(row => {
+                    const sorted = [...row].sort((a, b) => a - b);
+                    const key = sorted.join(',');
+                    const uniqueValues = new Set(sorted);
+                    const countMap = {};
+                    
+                    sorted.forEach(num => {
+                        countMap[num] = (countMap[num] || 0) + 1;
                     });
+                    
+                    const counts = Object.values(countMap).sort((a, b) => b - a);
+                    const type = getPermutationType(counts);
+                    
+                    permutations.push({
+                        original: [...row],
+                        sorted: sorted,
+                        key: key,
+                        type: type,
+                        counts: counts
+                    });
+                });
+                
+                return permutations;
+            }
+            
+            // Determine permutation type based on counts
+            function getPermutationType(counts) {
+                if (counts[0] === 4) return "All identical (1 permutation)";
+                if (counts[0] === 3) return "Three identical (4 permutations)";
+                if (counts[0] === 2 && counts[1] === 2) return "Two pairs (6 permutations)";
+                if (counts[0] === 2) return "One pair (12 permutations)";
+                return "All unique (24 permutations)";
+            }
+            
+            // Display permutation types
+            function displayPermutationTypes(container, perms, gridName) {
+                container.innerHTML = '<h4>Permutation Types:</h4>';
+                perms.forEach((perm, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'permutation-type';
+                    div.innerHTML = `
+                        <strong>Row ${index + 1}:</strong> ${perm.type}<br>
+                        Original: [${perm.original.join(', ')}] | 
+                        Sorted: [${perm.sorted.join(', ')}]
+                    `;
+                    container.appendChild(div);
                 });
             }
             
-            function shuffleArray(array) {
-                // Fisher-Yates shuffle algorithm
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-                return array;
-            }
-            
-            function createPermutationWithDuplicates(array, duplicateCount) {
-                // Create a permutation with specified number of duplicates
-                const val = array[0];
-                const result = [];
+            // Find matching permutations between grids
+            function findMatchingPermutations(perms1, perms2) {
+                const matches = {};
                 
-                // Add the duplicate values
-                for (let i = 0; i < duplicateCount; i++) {
-                    result.push(val);
-                }
-                
-                // Add the remaining unique values
-                for (let i = 1; i < array.length - (duplicateCount - 1); i++) {
-                    result.push(array[i]);
-                }
-                
-                // Shuffle the result
-                return shuffleArray(result);
-            }
-            
-            function highlightMatches() {
-                removeHighlights();
-                
-                // Get all cells
-                const cells1 = grid1.querySelectorAll('.cell');
-                const cells2 = grid2.querySelectorAll('.cell');
-                
-                // Create a map of sorted permutations to their positions in Grid 2
-                const permutationMap = {};
-                for (let i = 0; i < 4; i++) {
-                    const startIdx = i * 4;
-                    const key = currentGrid2[i].join(',');
-                    if (!permutationMap[key]) {
-                        permutationMap[key] = [];
-                    }
-                    permutationMap[key].push(startIdx);
-                }
-                
-                // Highlight matching permutations in Grid 1 based on Grid 2's sorted versions
-                for (let i = 0; i < 4; i++) {
-                    const startIdx = i * 4;
-                    const row = currentGrid1[i];
-                    const sortedRow = [...row].sort((a, b) => a - b);
-                    const key = sortedRow.join(',');
-                    
-                    if (permutationMap[key]) {
-                        // Highlight this row in Grid 1
-                        for (let j = 0; j < 4; j++) {
-                            cells1[startIdx + j].classList.add('highlight');
+                perms1.forEach((perm1, i) => {
+                    perms2.forEach((perm2, j) => {
+                        if (perm1.key === perm2.key) {
+                            if (!matches[perm1.key]) {
+                                matches[perm1.key] = {
+                                    type: perm1.type,
+                                    grid1Rows: [],
+                                    grid2Rows: []
+                                };
+                            }
+                            matches[perm1.key].grid1Rows.push(i);
+                            matches[perm1.key].grid2Rows.push(j);
                         }
-                        
-                        // Highlight corresponding rows in Grid 2
-                        permutationMap[key].forEach(idx => {
-                            for (let j = 0; j < 4; j++) {
-                                cells2[idx + j].classList.add('highlight');
+                    });
+                });
+                
+                return matches;
+            }
+            
+            // Highlight matching permutations in a grid
+            function highlightMatchingPermutations(gridElement, perms, matches) {
+                const cells = gridElement.querySelectorAll('.cell');
+                
+                Object.keys(matches).forEach(key => {
+                    const match = matches[key];
+                    
+                    // For grid1
+                    if (gridElement === grid1) {
+                        match.grid1Rows.forEach(row => {
+                            for (let col = 0; col < 4; col++) {
+                                const index = row * 4 + col;
+                                cells[index].classList.add('highlight');
                             }
                         });
                     }
+                    // For grid2
+                    else {
+                        match.grid2Rows.forEach(row => {
+                            for (let col = 0; col < 4; col++) {
+                                const index = row * 4 + col;
+                                cells[index].classList.add('highlight');
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Display comparison results
+            function displayComparisonResults(matches, perms1, perms2) {
+                comparisonResults.innerHTML = '<h4>Matching Permutations:</h4>';
+                
+                if (Object.keys(matches).length === 0) {
+                    comparisonResults.innerHTML += '<p>No matching permutations found between grids.</p>';
+                    return;
                 }
+                
+                Object.keys(matches).forEach(key => {
+                    const match = matches[key];
+                    const div = document.createElement('div');
+                    div.className = 'permutation-type';
+                    div.innerHTML = `
+                        <strong>${match.type}</strong><br>
+                        Sorted pattern: [${key.split(',').join(', ')}]<br>
+                        Appears in Grid 1 (rows): ${match.grid1Rows.map(r => r+1).join(', ')}<br>
+                        Appears in Grid 2 (rows): ${match.grid2Rows.map(r => r+1).join(', ')}
+                    `;
+                    comparisonResults.appendChild(div);
+                });
+            }
+            
+            // Update statistics
+            function updateStats(perms1, perms2) {
+                const unique1 = new Set(perms1.map(p => p.key));
+                const unique2 = new Set(perms2.map(p => p.key));
+                
+                stats1.innerHTML = `
+                    <p><strong>Grid 1 Summary</strong></p>
+                    <p>Unique permutation patterns: ${unique1.size}</p>
+                `;
+                
+                stats2.innerHTML = `
+                    <p><strong>Grid 2 Summary</strong></p>
+                    <p>Unique permutation patterns: ${unique2.size}</p>
+                `;
             }
             
             function removeHighlights() {
@@ -237,32 +341,64 @@
                 });
             }
             
-            function updateStats() {
-                // Count unique permutations in each grid
-                const uniquePerms1 = new Set();
-                const uniquePerms2 = new Set();
-                
-                currentGrid1.forEach(row => {
-                    uniquePerms1.add(row.join(','));
-                });
-                
-                currentGrid2.forEach(row => {
-                    uniquePerms2.add(row.join(','));
-                });
-                
-                stats1.innerHTML = `
-                    <p><strong>Permutation Types:</strong> ${uniquePerms1.size} unique row patterns</p>
-                    <p>Contains: 24, 12, 6, 4, and 1 permutation types</p>
-                `;
-                
-                stats2.innerHTML = `
-                    <p><strong>Permutation Types:</strong> ${uniquePerms2.size} unique sorted patterns</p>
-                    <p>Identical permutations are now visually comparable</p>
-                `;
+            function clearAll() {
+                initializeGrid(grid1, 4, 4);
+                initializeGrid(grid2, 4, 4);
+                stats1.innerHTML = '';
+                stats2.innerHTML = '';
+                permTypes1.innerHTML = '';
+                permTypes2.innerHTML = '';
+                comparisonResults.innerHTML = '';
+                removeHighlights();
             }
             
-            // Generate initial grids
-            generateGrids();
+            function loadExample() {
+                clearAll();
+                
+                // Example data with various permutation types
+                const exampleGrid1 = [
+                    [1, 2, 3, 4], // All unique (24)
+                    [1, 1, 2, 3], // One pair (12)
+                    [1, 1, 2, 2], // Two pairs (6)
+                    [1, 1, 1, 2], // Three identical (4)
+                    [1, 1, 1, 1]  // All identical (1)
+                ];
+                
+                const exampleGrid2 = [
+                    [4, 3, 2, 1], // Same as grid1 row1 when sorted
+                    [3, 2, 1, 1], // Same as grid1 row2 when sorted
+                    [2, 1, 2, 1], // Same as grid1 row3 when sorted
+                    [2, 1, 1, 1], // Same as grid1 row4 when sorted
+                    [1, 1, 1, 1]  // Same as grid1 row5 when sorted
+                ];
+                
+                // Fill grid1
+                const inputs1 = grid1.querySelectorAll('input');
+                exampleGrid1.forEach((row, i) => {
+                    row.forEach((val, j) => {
+                        const index = i * 4 + j;
+                        if (inputs1[index]) inputs1[index].value = val;
+                    });
+                });
+                
+                // Fill grid2
+                const inputs2 = grid2.querySelectorAll('input');
+                exampleGrid2.forEach((row, i) => {
+                    row.forEach((val, j) => {
+                        const index = i * 4 + j;
+                        if (inputs2[index]) inputs2[index].value = val;
+                    });
+                });
+            }
+            
+            // Event listeners
+            compareBtn.addEventListener('click', comparePermutations);
+            clearBtn.addEventListener('click', clearAll);
+            exampleBtn.addEventListener('click', loadExample);
+            
+            // Initialize
+            initializeGrid(grid1, 4, 4);
+            initializeGrid(grid2, 4, 4);
         });
     </script>
 </body>
