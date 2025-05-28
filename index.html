@@ -3,317 +3,384 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Simple Pattern Search in Grids</title>
+<title>4x4 Grid Pattern Search & Display</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-    .container {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 30px;
-    }
-    .grid-container {
-        width: 48%;
-    }
-    h2 {
-        text-align: center;
-        color: #333;
-    }
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 5px;
-        margin-bottom: 15px;
-    }
-    .cell {
-        border: 1px solid #ccc;
-        padding: 15px;
-        text-align: center;
-        font-weight: bold;
-        background-color: #f9f9f9;
-        position: relative;
-    }
-    .cell input {
-        width: 30px;
-        text-align: center;
-        font-weight: bold;
-        border: none;
-        background: transparent;
-    }
-    .controls {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-    }
-    button {
-        padding: 8px 15px;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    button:hover {
-        background-color: #45a049;
-    }
-    .highlight {
-        background-color: #ffeb3b;
-        animation: pulse 1s;
-    }
-    @keyframes pulse {
-        0% { background-color: #ffeb3b; }
-        50% { background-color: #ffc107; }
-        100% { background-color: #ffeb3b; }
-    }
-    .search-container {
-        margin: 20px 0;
-        padding: 15px;
-        background-color: #f5f5f5;
-        border-radius: 5px;
-    }
-    #searchInput {
-        padding: 8px;
-        width: 200px;
-        margin-right: 10px;
-    }
-    #searchResults {
-        margin-top: 10px;
-    }
-    .search-match {
-        padding: 5px;
-        background-color: #fff;
-        margin: 3px 0;
-        border-radius: 3px;
-    }
+body {
+    font-family: Arial, sans-serif;
+    margin: 0 auto;
+    max-width: 1200px;
+    padding: 20px;
+}
+h1 {
+    text-align: center;
+}
+.controls, .search-bar, .display-area {
+    margin-bottom: 20px;
+}
+button {
+    padding: 8px 15px;
+    margin-right: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #45a049;
+}
+#gridContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+}
+.cell {
+    border: 1px solid #ccc;
+    padding: 15px;
+    text-align: center;
+    font-weight: bold;
+    background-color: #f9f9f9;
+}
+.cell input {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    text-align: center;
+}
+#fullNumberDisplay {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 10px 0;
+    border: 1px solid #ccc;
+}
+.number-block {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 0 2px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    font-size: 20px;
+    min-width: 40px;
+    text-align: center;
+}
+.highlight {
+    background-color: #ffeb3b;
+}
 </style>
 </head>
 <body>
-<h1>Simple Pattern Search in 4x4 Grids</h1>
+
+<h1>4x4 Grid Pattern Search & Display</h1>
 
 <div class="controls">
     <button id="loadExampleBtn">Load Example</button>
     <button id="clearBtn">Clear All</button>
-    <button id="searchBtn">Search Pattern</button>
 </div>
 
-<div class="container">
-    <div class="grid-container">
-        <h2>Grid 1</h2>
-        <div class="grid" id="grid1"></div>
-    </div>
-    <div class="grid-container">
-        <h2>Grid 2</h2>
-        <div class="grid" id="grid2"></div>
-    </div>
+<div class="search-bar">
+    <input type="text" id="patternInput" placeholder="Enter pattern, e.g., 1-2-3" style="width: 200px; font-size:16px; padding:8px;"/>
+    <button id="searchPatternBtn">Search Pattern</button>
 </div>
 
-<div class="search-container">
-    <h3>Pattern Search</h3>
-    <input type="text" id="searchInput" placeholder="Enter pattern, e.g., 1-2-3" />
-    <div id="searchResults"></div>
+<div class="search-bar">
+    <input type="text" id="numberSearchInput" placeholder="Search number (2D/3D)" style="width: 200px; font-size:16px; padding:8px;"/>
+    <button id="searchNumberBtn">Search Number</button>
 </div>
+
+<h2>Grid 1</h2>
+<div id="grid1" class="grid"></div>
+
+<h2>Grid 2</h2>
+<div id="grid2" class="grid"></div>
+
+<h2>All Numbers (Side by Side)</h2>
+<div id="fullNumberDisplay"></div>
+
+<h2>Results</h2>
+<div id="results"></div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const grid1 = document.getElementById('grid1');
-    const grid2 = document.getElementById('grid2');
-    const loadExampleBtn = document.getElementById('loadExampleBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const searchBtn = document.getElementById('searchBtn');
-    const searchInput = document.getElementById('searchInput');
-    const searchResults = document.getElementById('searchResults');
+const gridSize = 4;
+let gridData1 = [];
+let gridData2 = [];
 
-    // Initialize grids with input cells
-    function initializeGrid(grid) {
-        grid.innerHTML = '';
-        for (let i=0; i<4; i++) {
-            for (let j=0; j<4; j++) {
-                const cell = document.createElement('div');
-                cell.className='cell';
-                const input = document.createElement('input');
-                input.type='text';
-                input.maxLength=2;
-                input.dataset.row=i;
-                input.dataset.col=j;
-                cell.appendChild(input);
-                grid.appendChild(cell);
-            }
+function createGrid(gridElement, dataArray) {
+    gridElement.innerHTML = '';
+    for (let i=0; i<gridSize; i++) {
+        for (let j=0; j<gridSize; j++) {
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = 0;
+            input.max = 9;
+            input.value = dataArray && dataArray[i] ? dataArray[i][j] : '';
+            input.style.width='50px';
+            input.style.height='50px';
+            input.style.fontSize='24px';
+            input.style.textAlign='center';
+            input.dataset.row = i;
+            input.dataset.col = j;
+
+            const cell = document.createElement('div');
+            cell.className='cell';
+            cell.appendChild(input);
+            gridElement.appendChild(cell);
         }
     }
+}
 
-    // Get grid data as 2D array
-    function getGridData(grid) {
-        const inputs = grid.querySelectorAll('input');
-        const data = [[], [], [], []];
-        inputs.forEach(input => {
-            const r = parseInt(input.dataset.row);
-            const c = parseInt(input.dataset.col);
-            data[r][c] = input.value.trim() !== '' ? input.value.trim() : '';
-        });
-        return data;
-    }
-
-    // Load example grids
-    function loadExample() {
-        initializeGrid(grid1);
-        initializeGrid(grid2);
-        const example1 = [
-            [1,2,3,4],
-            [5,6,7,8],
-            [9,10,11,12],
-            [13,14,15,16]
-        ];
-        const example2 = [
-            [16,15,14,13],
-            [12,11,10,9],
-            [8,7,6,5],
-            [4,3,2,1]
-        ];
-        // Fill grid1
-        const inputs1 = grid1.querySelectorAll('input');
-        example1.forEach((row, i) => {
-            row.forEach((val, j) => {
-                const index = i*4 + j;
-                inputs1[index].value = val;
-            });
-        });
-        // Fill grid2
-        const inputs2=grid2.querySelectorAll('input');
-        example2.forEach((row, i) => {
-            row.forEach((val, j) => {
-                const index = i*4 + j;
-                inputs2[index].value = val;
-            });
-        });
-    }
-
-    // Clear grids and results
-    function clearAll() {
-        initializeGrid(grid1);
-        initializeGrid(grid2);
-        searchResults.innerHTML = '';
-    }
-
-    // Search for the user-input pattern
-    function searchPattern() {
-        // Remove previous highlights
-        document.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight'));
-        document.querySelectorAll('.cell-highlight').forEach(c => c.style.display='none');
-
-        const patternStr = searchInput.value.trim();
-        if (!patternStr) {
-            searchResults.innerHTML = '<div class="search-match">Please enter a pattern.</div>';
-            return;
-        }
-        const pattern = patternStr.split(/[-,\s]+/).filter(s => s !== '');
-        if (pattern.length === 0) {
-            searchResults.innerHTML = '<div class="search-match">Invalid pattern.</div>';
-            return;
-        }
-
-        const gridData1 = getGridData(grid1);
-        const gridData2 = getGridData(grid2);
-
-        // Search in grid1
-        const foundInGrid1 = findPatternInGrid(gridData1, pattern);
-        // Search in grid2
-        const foundInGrid2 = findPatternInGrid(gridData2, pattern);
-
-        // Display results
-        searchResults.innerHTML = '';
-        if (foundInGrid1) {
-            const div = document.createElement('div');
-            div.className='search-match';
-            div.innerHTML = `<strong>Pattern found in Grid 1:</strong> ${pattern.join('-')}`;
-            searchResults.appendChild(div);
-            // Highlight in grid1
-            highlightPatternInGrid(grid1, foundInGrid1);
-        }
-        if (foundInGrid2) {
-            const div = document.createElement('div');
-            div.className='search-match';
-            div.innerHTML = `<strong>Pattern found in Grid 2:</strong> ${pattern.join('-')}`;
-            searchResults.appendChild(div);
-            // Highlight in grid2
-            highlightPatternInGrid(grid2, foundInGrid2);
-        }
-        if (!foundInGrid1 && !foundInGrid2) {
-            searchResults.innerHTML = '<div class="search-match">Pattern not found in either grid.</div>';
+function getGridValues(gridElement) {
+    const inputs = gridElement.querySelectorAll('input');
+    const data = [];
+    for (let i=0; i<gridSize; i++) {
+        data[i] = [];
+        for (let j=0; j<gridSize; j++) {
+            const val = inputs[i*gridSize + j].value.trim();
+            data[i][j] = val !== '' ? val : '';
         }
     }
+    return data;
+}
 
-    // Helper: find pattern in a grid data
-    function findPatternInGrid(gridData, pattern) {
-        const size = pattern.length;
-        for (let i=0; i<4; i++) {
-            for (let j=0; j<4; j++) {
-                if (gridData[i][j] === pattern[0]) {
-                    // BFS or DFS to find sequence
-                    if (searchFromPosition(gridData, i, j, pattern, 0, new Set())) {
-                        return {start: [i,j]};
-                    }
+function loadExample() {
+    // Example data
+    gridData1 = [
+        [1,2,3,4],
+        [5,6,7,8],
+        [9,0,1,2],
+        [3,4,5,6]
+    ];
+    gridData2 = [
+        [6,5,4,3],
+        [2,1,0,9],
+        [8,7,6,5],
+        [4,3,2,1]
+    ];
+    createGrid(document.getElementById('grid1'), gridData1);
+    createGrid(document.getElementById('grid2'), gridData2);
+    displayAllNumbers();
+    document.getElementById('results').innerHTML = '';
+}
+
+function clearAll() {
+    createGrid(document.getElementById('grid1'), []);
+    createGrid(document.getElementById('grid2'), []);
+    document.getElementById('fullNumberDisplay').innerHTML = '';
+    document.getElementById('results').innerHTML = '';
+}
+
+function displayAllNumbers() {
+    // Concatenate all numbers side by side for both grids
+    const data1 = getGridValues(document.getElementById('grid1'));
+    const data2 = getGridValues(document.getElementById('grid2'));
+    const container = document.getElementById('fullNumberDisplay');
+    container.innerHTML = '';
+
+    // Flatten and combine both grids
+    const flat1 = data1.flat();
+    const flat2 = data2.flat();
+
+    // Combine both in side-by-side display
+    for (let i=0; i<flat1.length; i++) {
+        const block = document.createElement('div');
+        block.className='number-block';
+        block.innerText = flat1[i] !== '' ? flat1[i] : '?';
+        container.appendChild(block);
+    }
+    for (let i=0; i<flat2.length; i++) {
+        const block = document.createElement('div');
+        block.className='number-block';
+        block.innerText = flat2[i] !== '' ? flat2[i] : '?';
+        container.appendChild(block);
+    }
+}
+
+document.getElementById('loadExampleBtn').addEventListener('click', () => {
+    loadExample();
+});
+document.getElementById('clearBtn').addEventListener('click', () => {
+    clearAll();
+});
+window.onload = () => {
+    createGrid(document.getElementById('grid1'), []);
+    createGrid(document.getElementById('grid2'), []);
+};
+document.getElementById('searchPatternBtn').addEventListener('click', () => {
+    performPatternSearch();
+});
+document.getElementById('searchNumberBtn').addEventListener('click', () => {
+    performNumberSearch();
+});
+
+function performPatternSearch() {
+    const patternStr = document.getElementById('patternInput').value.trim();
+    if (!patternStr) {
+        document.getElementById('results').innerHTML = 'Enter a pattern.';
+        return;
+    }
+    const pattern = patternStr.split(/[-,\s]+/).filter(s => s !== '');
+    // Search in Grid 1
+    const data1 = getGridValues(document.getElementById('grid1'));
+    const data2 = getGridValues(document.getElementById('grid2'));
+    const resultDiv = document.getElementById('results');
+
+    // Clear previous highlights
+    document.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight'));
+    document.querySelectorAll('.cell-highlight').forEach(c => c.style.display='none');
+
+    const foundInGrid1 = findPatternInGrid(data1, pattern);
+    const foundInGrid2 = findPatternInGrid(data2, pattern);
+
+    resultDiv.innerHTML = '';
+    if (foundInGrid1) {
+        const div = document.createElement('div');
+        div.innerHTML = `<strong>Pattern found in Grid 1</strong>`;
+        resultDiv.appendChild(div);
+        highlightPatternInGrid('grid1', foundInGrid1);
+    }
+    if (foundInGrid2) {
+        const div = document.createElement('div');
+        div.innerHTML = `<strong>Pattern found in Grid 2</strong>`;
+        resultDiv.appendChild(div);
+        highlightPatternInGrid('grid2', foundInGrid2);
+    }
+    if (!foundInGrid1 && !foundInGrid2) {
+        resultDiv.innerHTML = 'Pattern not found in either grid.';
+    }
+}
+
+function performNumberSearch() {
+    const searchNumber = document.getElementById('numberSearchInput').value.trim();
+    if (searchNumber === '') {
+        document.getElementById('results').innerHTML = 'Enter a number to search.';
+        return;
+    }
+    const data1 = getGridValues(document.getElementById('grid1'));
+    const data2 = getGridValues(document.getElementById('grid2'));
+    const resultDiv = document.getElementById('results');
+
+    // Clear previous highlights
+    document.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight'));
+    document.querySelectorAll('.cell-highlight').forEach(c => c.style.display='none');
+
+    const foundInGrid1 = findNumberInGrid(data1, searchNumber);
+    const foundInGrid2 = findNumberInGrid(data2, searchNumber);
+
+    resultDiv.innerHTML = '';
+    if (foundInGrid1) {
+        const div = document.createElement('div');
+        div.innerHTML = `<strong>Number ${searchNumber} found in Grid 1</strong>`;
+        resultDiv.appendChild(div);
+        highlightNumberInGrid('grid1', searchNumber);
+    }
+    if (foundInGrid2) {
+        const div = document.createElement('div');
+        div.innerHTML = `<strong>Number ${searchNumber} found in Grid 2</strong>`;
+        resultDiv.appendChild(div);
+        highlightNumberInGrid('grid2', searchNumber);
+    }
+    if (!foundInGrid1 && !foundInGrid2) {
+        resultDiv.innerHTML = `Number ${searchNumber} not found in either grid.`;
+    }
+}
+
+function findPatternInGrid(data, pattern) {
+    // Search for pattern in grid, moving to adjacent cells
+    for (let r=0; r<gridSize; r++) {
+        for (let c=0; c<gridSize; c++) {
+            if (data[r][c] === pattern[0]) {
+                const visited = new Set();
+                if (searchPatternRec(data, r, c, pattern, 0, visited)) {
+                    return {row: r, col: c};
                 }
             }
         }
-        return null;
     }
+    return null;
+}
 
-    // Recursive search for pattern starting at position with index
-    function searchFromPosition(gridData, row, col, pattern, index, visited) {
-        if (index >= pattern.length) return true;
-        if (row <0 || row>=4 || col<0 || col>=4) return false;
-        const key = row + ',' + col;
-        if (visited.has(key)) return false;
-        if (gridData[row][col] !== pattern[index]) return false;
+function searchPatternRec(data, r, c, pattern, index, visited) {
+    if (index >= pattern.length) return true;
+    if (r < 0 || r >= gridSize || c < 0 || c >= gridSize) return false;
+    const key = r + ',' + c;
+    if (visited.has(key)) return false;
+    if (data[r][c] !== pattern[index]) return false;
 
-        visited.add(key);
-        // Explore neighbors (adjacent cells)
-        const directions = [
-            [-1,0], [1,0], [0,-1], [0,1]
-        ];
-        for (const [dr, dc] of directions) {
-            if (searchFromPosition(gridData, row+dr, col+dc, pattern, index+1, visited)) {
-                return true;
+    visited.add(key);
+    const directions = [[-1,0], [1,0], [0,-1], [0,1]];
+    for (const [dr, dc] of directions) {
+        if (searchPatternRec(data, r+dr, c+dc, pattern, index+1, visited)) {
+            return true;
+        }
+    }
+    visited.delete(key);
+    return false;
+}
+
+function highlightPatternInGrid(gridId, info) {
+    const grid = document.getElementById(gridId);
+    grid.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight'));
+    grid.querySelectorAll('.cell-highlight').forEach(c => c.style.display='none');
+
+    if (info) {
+        // Highlight starting cell
+        const index = info.row * gridSize + info.col;
+        const cell = grid.querySelectorAll('.cell')[index];
+        cell.classList.add('highlight');
+        cell.querySelector('.cell-highlight').style.display='block';
+    }
+}
+
+function findNumberInGrid(data, number) {
+    for (let r=0; r<gridSize; r++) {
+        for (let c=0; c<gridSize; c++) {
+            if (data[r][c] === number) {
+                return {row: r, col: c};
             }
         }
-        visited.delete(key);
-        return false;
     }
+    return null;
+}
 
-    // Highlight the pattern in grid
-    function highlightPatternInGrid(grid, startPos) {
-        // For simplicity, highlight only the starting cell
-        // (Could be expanded to show full path if needed)
-        const cells = grid.querySelectorAll('.cell');
-        cells.forEach(c => c.classList.remove('highlight'));
-        // Highlight starting cell
-        if (startPos) {
-            const [r,c] = startPos.start;
-            const index = r*4 + c;
-            const cell = cells[index];
+function highlightNumberInGrid(gridId, number) {
+    const grid = document.getElementById(gridId);
+    grid.querySelectorAll('.cell').forEach(c => c.classList.remove('highlight'));
+    grid.querySelectorAll('.cell-highlight').forEach(c => c.style.display='none');
+
+    const cells = grid.querySelectorAll('.cell');
+    cells.forEach((cell, index) => {
+        const val = cell.querySelector('input').value.trim();
+        if (val === number) {
             cell.classList.add('highlight');
             cell.querySelector('.cell-highlight').style.display='block';
         }
-    }
-
-    // Event listeners
-    document.getElementById('loadExampleBtn').addEventListener('click', loadExample);
-    document.getElementById('clearBtn').addEventListener('click', clearAll);
-    document.getElementById('searchBtn').addEventListener('click', searchPattern);
-    document.getElementById('searchInput').addEventListener('keypress', e => {
-        if (e.key==='Enter') searchPattern();
     });
+}
 
-    // Initialize grids
-    initializeGrid(grid1);
-    initializeGrid(grid2);
+// Event listeners
+document.getElementById('loadExampleBtn').addEventListener('click', () => {
+    loadExample();
 });
+document.getElementById('clearBtn').addEventListener('click', () => {
+    clearAll();
+});
+document.getElementById('searchPatternBtn').addEventListener('click', () => {
+    performPatternSearch();
+});
+document.getElementById('searchNumberBtn').addEventListener('click', () => {
+    performNumberSearch();
+});
+
+// Initialize
+window.onload = () => {
+    createGrid(document.getElementById('grid1'), []);
+    createGrid(document.getElementById('grid2'), []);
+};
 </script>
 </body>
 </html>
