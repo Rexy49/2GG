@@ -3,96 +3,168 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Two Grids with Unique 256 Combinations</title>
+<title>Comparison Charts with Search</title>
 <style>
   body { font-family: Arial, sans-serif; padding: 20px; }
   h2 { margin-top: 30px; }
-  .grid-container { display: flex; gap: 50px; margin-top: 20px; }
-  .grid { display: grid; grid-template-columns: repeat(4, 60px); gap: 10px; }
-  .grid input { width: 60px; height: 60px; text-align: center; font-size: 20px; }
-  button { padding: 10px 20px; font-size: 16px; margin-top: 20px; }
+  .grids { display: flex; gap: 50px; margin-top: 20px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 50px); gap: 10px; }
+  input { width: 50px; height: 50px; text-align: center; font-size: 20px; }
+  button { padding: 10px 20px; font-size: 16px; margin-top: 10px; }
+  #controls { margin-top: 20px; display: flex; align-items: center; gap: 10px; }
+  #searchInput { padding: 8px; width: 300px; font-size: 16px; }
+  #combinations { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 5px; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
+  .combo { padding: 5px 10px; background-color: #f0f0f0; border-radius: 4px; font-family: monospace; }
+  #total { margin-top: 10px; font-weight: bold; }
 </style>
 </head>
 <body>
 
-<h1>Two Grids Displaying Unique 4-Digit Combinations</h1>
+<h1>Comparison Charts with Search</h1>
 
-<button id="generateBtn">Generate Both Grids</button>
-
-<div class="grid-container">
+<div class="grids">
+  <!-- First Grid -->
   <div>
     <h2>Grid 1</h2>
     <div class="grid" id="grid1">
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
     </div>
   </div>
-  
+  <!-- Second Grid -->
   <div>
     <h2>Grid 2</h2>
     <div class="grid" id="grid2">
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
-      <input type="text" maxlength="4" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
     </div>
   </div>
 </div>
 
+<div id="controls">
+  <button id="generateBtn">Generate Combinations</button>
+  <button id="resetBtn">Reset</button>
+  <input type="text" id="searchInput" placeholder="Search combinations containing digits..." />
+</div>
+
+<div id="total">Total Combinations: 0</div>
+
+<!-- List of combinations -->
+<div id="combinations"></div>
+
 <script>
-const totalNumbers = 256; // from 0000 to 0255
+const totalNumbers = 256; // 0000 to 0255
 const allNumbers = Array.from({length: totalNumbers}, (_, i) => i.toString().padStart(4, '0'));
 
 const grid1Inputs = document.querySelectorAll('#grid1 input');
 const grid2Inputs = document.querySelectorAll('#grid2 input');
+const combosContainer = document.getElementById('combinations');
+const totalDisplay = document.getElementById('total');
+const searchInput = document.getElementById('searchInput');
 
-function getUniqueRandomNumbers(count) {
-  // Shuffle array and pick first 'count' elements
-  const shuffled = [...allNumbers];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+let currentCombinations = [];
+
+// Generate all combinations based on grid inputs
+function generateCombinations() {
+  // Read input values for both grids
+  const grid1Values = Array.from(grid1Inputs).map(input => input.value.trim());
+  const grid2Values = Array.from(grid2Inputs).map(input => input.value.trim());
+
+  // Validate inputs: each should be a digit 0-9 or empty
+  const isValidDigit = val => /^[0-9]$/.test(val);
+  if (!grid1Values.every(val => val === '' || isValidDigit(val)) ||
+      !grid2Values.every(val => val === '' || isValidDigit(val))) {
+    alert('Please enter digits 0-9 or leave empty.');
+    return;
   }
-  return shuffled.slice(0, count);
+
+  // If both grids are empty, show all combinations
+  if (grid1Values.every(v => v === '') && grid2Values.every(v => v === '')) {
+    currentCombinations = [...allNumbers];
+  } else {
+    // Filter combinations based on inputs
+    currentCombinations = allNumbers.filter(number => {
+      return (
+        (grid1Values.every((val, i) => val === '' || number[i] === val)) &&
+        (grid2Values.every((val, i) => val === '' || number[i] === val))
+      );
+    });
+  }
+
+  displayCombinations();
 }
 
-function populateGrid(gridInputs) {
-  const selectedNumbers = getUniqueRandomNumbers(16);
-  for (let i=0; i<16; i++) {
-    gridInputs[i].value = selectedNumbers[i];
-  }
+// Display the filtered combinations
+function displayCombinations() {
+  combosContainer.innerHTML = '';
+  currentCombinations.forEach(comb => {
+    const div = document.createElement('div');
+    div.className = 'combo';
+    div.textContent = comb;
+    combosContainer.appendChild(div);
+  });
+  totalDisplay.textContent = `Total Combinations: ${currentCombinations.length}`;
 }
 
-document.getElementById('generateBtn').addEventListener('click', () => {
-  populateGrid(grid1Inputs);
-  populateGrid(grid2Inputs);
+// Reset inputs and list
+function reset() {
+  document.querySelectorAll('input[type=text]').forEach(input => input.value = '');
+  currentCombinations = [...allNumbers];
+  displayCombinations();
+  searchInput.value = '';
+}
+
+// Filter displayed combinations based on search
+searchInput.addEventListener('input', () => {
+  const searchTerm = searchInput.value.trim();
+  if (searchTerm === '') {
+    displayCombinations();
+  } else {
+    const filtered = currentCombinations.filter(c => c.includes(searchTerm));
+    combosContainer.innerHTML = '';
+    filtered.forEach(comb => {
+      const div = document.createElement('div');
+      div.className = 'combo';
+      div.textContent = comb;
+      combosContainer.appendChild(div);
+    });
+    totalDisplay.textContent = `Total Combinations: ${filtered.length}`;
+  }
 });
+
+document.getElementById('generateBtn').addEventListener('click', generateCombinations);
+document.getElementById('resetBtn').addEventListener('click', reset);
+
+// Initialize with all combinations
+reset();
 </script>
 
 </body>
