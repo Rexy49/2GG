@@ -3,41 +3,199 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Separate Permutation Generation & Categorization (No Duplicates)</title>
+<title>Permutation Generator & Filter</title>
+<!-- Google Fonts for a modern look -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
 <style>
-  body { font-family: Arial, sans-serif; padding: 20px; }
-  h1 { text-align: center; margin-bottom: 20px; }
-  .container { display: flex; gap: 20px; margin-bottom: 20px; }
-  .grid-section { flex: 1; }
-  h2 { text-align: center; }
-  .grid { display: grid; grid-template-columns: repeat(4, 50px); gap: 10px; margin: 10px auto; }
-  input { width: 50px; height: 50px; text-align: center; font-size: 20px; }
-  button { display: block; margin: 20px auto; padding: 10px 20px; font-size: 16px; }
-  /* Styles for side-by-side results */
-  #results {
+  /* Reset some default styles */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+    min-height: 100vh;
+    padding: 30px;
+    color: #333;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 2.5em;
+    color: #fff;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  }
+
+  /* Container styles */
+  .container {
     display: flex;
-    flex-direction: row;
+    flex-wrap: wrap;
     gap: 20px;
     justify-content: center;
-    margin-top: 20px;
+    max-width: 1200px;
+    margin: 0 auto 30px auto;
   }
+
+  /* Grid sections styling */
+  .grid-section {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    flex: 1 1 300px;
+    max-width: 300px;
+  }
+
+  .grid-section h2 {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+    color: #fff;
+  }
+
+  /* Grid inputs styling */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 50px);
+    gap: 10px;
+    justify-content: center;
+  }
+
+  input[type="text"] {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    border: none;
+    font-size: 1.5em;
+    text-align: center;
+    font-weight: 600;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+  }
+
+  input[type="text"]:focus {
+    outline: none;
+    box-shadow: 0 0 12px #fff, 0 4px 8px rgba(0,0,0,0.2);
+    border: 2px solid #fff;
+  }
+
+  /* Buttons styling */
+  button {
+    display: block;
+    margin: 15px auto 0 auto;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 25px;
+    background: #fff;
+    color: #333;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+  }
+
+  button:hover {
+    background: #ffd700;
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+
+  /* Search section styling */
+  #search-section {
+    text-align: center;
+    margin-bottom: 30px;
+    background: rgba(255,255,255,0.2);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #search-section h3 {
+    color: #fff;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+  }
+
+  #searchInput {
+    width: 250px;
+    padding: 12px 20px;
+    border-radius: 25px;
+    border: none;
+    font-size: 1em;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+  }
+
+  #searchInput:focus {
+    outline: none;
+    box-shadow: 0 0 12px #fff, 0 4px 8px rgba(0,0,0,0.2);
+    border: 2px solid #fff;
+  }
+
+  /* Results styling */
+  #results {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 30px;
+  }
+
   .result-column {
-    flex: 1;
+    background: rgba(255,255,255,0.1);
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    flex: 1 1 350px;
     max-height: 600px;
     overflow-y: auto;
+    transition: all 0.3s ease;
   }
-  .category { margin-bottom: 20px; }
-  pre { background: #f4f4f4; padding: 10px; white-space: pre-wrap; word-wrap: break-word; }
+
+  .result-column h3 {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #fff;
+    font-size: 1.2em;
+  }
+
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95em;
+    color: #222;
+  }
+
+  /* Responsive adjustments for smaller screens */
+  @media(max-width: 768px){
+    body {
+      padding: 20px;
+    }
+    #searchInput {
+      width: 200px;
+    }
+  }
 </style>
 </head>
 <body>
 
-<h1>Separate Permutation Generation & Categorization (No Duplicates)</h1>
+<h1>🧙‍♂️ Permutation Generator & Filter</h1>
 
+<!-- Input grids -->
 <div class="container">
   <!-- Grid 1 -->
   <div class="grid-section" id="grid1-section">
-    <h2>Input Grid 1</h2>
+    <h2>Grid 1</h2>
     <div class="grid" id="grid1">
       <input maxlength="1" value="1" /> <input maxlength="1" value="3" /> <input maxlength="1" value="4" /> <input maxlength="1" value="6" />
       <input maxlength="1" value="3" /> <input maxlength="1" value="4" /> <input maxlength="1" value="7" /> <input maxlength="1" value="6" />
@@ -45,10 +203,9 @@
       <input maxlength="1" value="2" /> <input maxlength="1" value="5" /> <input maxlength="1" value="7" /> <input maxlength="1" value="9" />
     </div>
   </div>
-
   <!-- Grid 2 -->
   <div class="grid-section" id="grid2-section">
-    <h2>Input Grid 2</h2>
+    <h2>Grid 2</h2>
     <div class="grid" id="grid2">
       <input maxlength="1" value="2" /> <input maxlength="1" value="4" /> <input maxlength="1" value="5" /> <input maxlength="1" value="7" />
       <input maxlength="1" value="3" /> <input maxlength="1" value="5" /> <input maxlength="1" value="8" /> <input maxlength="1" value="7" />
@@ -58,26 +215,39 @@
   </div>
 </div>
 
-<button id="generateBtn">Generate & Categorize Separately (No Duplicates)</button>
+<!-- Generate Button -->
+<button id="generateBtn">🔄 Generate & Categorize</button>
 
-<!-- Adjusted results display for side-by-side layout -->
-<div class="results" id="results" style="display:none;">
-  <h2>Results</h2>
-  <div style="display:flex; gap:20px;">
+<!-- Search input -->
+<div id="search-section">
+  <h3>🔎 Search for sequences</h3>
+  <input type="text" id="searchInput" placeholder='e.g., 1, 13, 134, 48' />
+  <button id="searchBtn">Search</button>
+  <button id="resetBtn">Reset</button>
+</div>
+
+<!-- Results Display -->
+<div id="results" style="display:none;">
+  <h2 style="text-align:center; color:#fff;">🔢 Results</h2>
+  <div style="display:flex; flex-wrap:wrap; justify-content: center; gap:30px;">
     <div id="results-grid1" class="result-column"></div>
     <div id="results-grid2" class="result-column"></div>
   </div>
 </div>
 
 <script>
-// Function to get columns from a grid
+/* Store all permutations for filtering */
+let allCombosGrid1 = [];
+let allCombosGrid2 = [];
+
+/* Helper to get columns from grid inputs */
 function getColumns(gridId) {
   const inputs = document.querySelectorAll(`#${gridId} input`);
   const columns = [[], [], [], []];
   for (let colIdx=0; colIdx<4; colIdx++) {
     for (let rowIdx=0; rowIdx<4; rowIdx++) {
-      const index = rowIdx*4 + colIdx;
-      const val = inputs[index].value.trim();
+      const idx = rowIdx*4 + colIdx;
+      const val = inputs[idx].value.trim();
       if (val !== '') {
         columns[colIdx].push(val);
       }
@@ -86,107 +256,125 @@ function getColumns(gridId) {
   return columns;
 }
 
-// Generate all unique combinations using Set
+/* Generate all unique combination permutations */
 function generateUniqueCombinations(columns) {
-  const comboSet = new Set();
+  const set = new Set();
   for (let a of columns[0]) {
     for (let b of columns[1]) {
       for (let c of columns[2]) {
         for (let d of columns[3]) {
-          comboSet.add(a + b + c + d);
+          set.add(a + b + c + d);
         }
       }
     }
   }
-  return Array.from(comboSet);
+  return Array.from(set);
 }
 
-// Categorize permutations
+/* Categorize permutations based on digit uniqueness */
 function categorize(combos) {
   const categories = {
-    '24-WAY': [], // all distinct
-    '12-WAY': [], // one pair
-    '6-WAY': [],  // two pairs
-    '4-WAY': []   // triplet + single
+    '24-WAY': [],
+    '12-WAY': [],
+    '6-WAY': [],
+    '4-WAY': []
   };
-
-  // Use a Set to avoid duplicates during categorization
-  const uniqueCombos = new Set(combos);
-
-  uniqueCombos.forEach(c => {
+  new Set(combos).forEach(c => {
     const digits = c.split('');
     const counts = {};
-    digits.forEach(d => {
-      counts[d] = (counts[d] || 0) + 1;
-    });
-    const countValues = Object.values(counts);
+    digits.forEach(d => { counts[d] = (counts[d] || 0) + 1; });
     const uniqueCount = Object.keys(counts).length;
-
-    if (uniqueCount === 4) {
-      // all distinct
-      categories['24-WAY'].push(c);
-    } else if (uniqueCount === 3) {
-      // one pair + two singles
-      if (countValues.includes(2)) {
-        categories['12-WAY'].push(c);
-      }
-    } else if (uniqueCount === 2) {
-      // either two pairs or triplet+single
-      const pairCount = countValues.filter(v => v === 2).length;
-      const tripletCount = countValues.includes(3) ? 1 : 0;
-      if (pairCount === 2) {
-        // two pairs
-        categories['6-WAY'].push(c);
-      } else if (tripletCount === 1) {
-        // triplet + single
-        categories['4-WAY'].push(c);
-      }
+    const countValues = Object.values(counts);
+    if (uniqueCount === 4) categories['24-WAY'].push(c);
+    else if (uniqueCount ===3 && countValues.includes(2)) categories['12-WAY'].push(c);
+    else if (uniqueCount ===2) {
+      const pairs = countValues.filter(v => v===2).length;
+      const triplets = countValues.includes(3);
+      if (pairs===2) categories['6-WAY'].push(c);
+      if (triplets) categories['4-WAY'].push(c);
     }
   });
-
   return categories;
 }
 
-// Helper to create sections with dynamic labels
-function createCategorySection(categoryName, combos) {
-  const count = combos.length;
-  const title = `${categoryName} (${count})`;
-  const section = document.createElement('div');
-  section.className = 'category';
-  section.innerHTML = `<h3>${title}</h3><pre>${combos.join(' ')}</pre>`;
-  return section;
+/* Creates a section for each category with permutations */
+function createCategorySection(title, combos) {
+  const sec = document.createElement('div');
+  sec.className = 'category';
+  sec.innerHTML = `<h3>${title} (${combos.length})</h3><pre>${combos.join(' ')}</pre>`;
+  return sec;
 }
 
+/* Generate permutations and display categorized results */
 document.getElementById('generateBtn').addEventListener('click', () => {
-  // Get columns
-  const columns1 = getColumns('grid1');
-  const columns2 = getColumns('grid2');
+  const col1 = getColumns('grid1');
+  const col2 = getColumns('grid2');
 
-  // Generate unique combos for each grid
-  const combos1 = generateUniqueCombinations(columns1);
-  const combos2 = generateUniqueCombinations(columns2);
+  allCombosGrid1 = generateUniqueCombinations(col1);
+  allCombosGrid2 = generateUniqueCombinations(col2);
 
-  // Categorize separately
-  const categories1 = categorize(combos1);
-  const categories2 = categorize(combos2);
+  const cats1 = categorize(allCombosGrid1);
+  const cats2 = categorize(allCombosGrid2);
 
-  // Show results
-  const resultsDiv = document.getElementById('results');
-  resultsDiv.style.display = 'block';
+  // Show results container
+  document.getElementById('results').style.display='block';
 
-  document.getElementById('results-grid1').innerHTML = '';
-  document.getElementById('results-grid2').innerHTML = '';
+  const container1 = document.getElementById('results-grid1');
+  const container2 = document.getElementById('results-grid2');
+  container1.innerHTML=''; container2.innerHTML='';
 
-  // Populate grid 1
-  for (const [category, combos] of Object.entries(categories1)) {
-    const sec = createCategorySection(`Grid 1 - ${category}`, combos);
-    document.getElementById('results-grid1').appendChild(sec);
+  // Populate categories
+  for (const [category, combos] of Object.entries(cats1)) {
+    container1.appendChild(createCategorySection(`Grid 1 - ${category}`, combos));
+  }
+  for (const [category, combos] of Object.entries(cats2)) {
+    container2.appendChild(createCategorySection(`Grid 2 - ${category}`, combos));
+  }
+});
+
+/* Search button: filter permutations containing sequence */
+document.getElementById('searchBtn').addEventListener('click', () => {
+  const seq = document.getElementById('searchInput').value.trim();
+  if (!seq) {
+    alert('Please enter a sequence to search for.');
+    return;
   }
 
-  // Populate grid 2
-  for (const [category, combos] of Object.entries(categories2)) {
-    const sec = createCategorySection(`Grid 2 - ${category}`, combos);
-    document.getElementById('results-grid2').appendChild(sec);
+  const filterCombos = (combos) => combos.filter(c => c.includes(seq));
+
+  // Clear current display
+  document.getElementById('results-grid1').innerHTML='';
+  document.getElementById('results-grid2').innerHTML='';
+
+  // Show filtered results
+  const filtered1 = filterCombos(allCombosGrid1);
+  const filtered2 = filterCombos(allCombosGrid2);
+
+  if (filtered1.length > 0) {
+    document.getElementById('results-grid1').appendChild(createCategorySection(`Grid 1 - containing "${seq}"`, filtered1));
+  } else {
+    document.getElementById('results-grid1').innerHTML = `<p style="color:#fff;">No results with "${seq}"</p>`;
+  }
+
+  if (filtered2.length > 0) {
+    document.getElementById('results-grid2').appendChild(createCategorySection(`Grid 2 - containing "${seq}"`, filtered2));
+  } else {
+    document.getElementById('results-grid2').innerHTML = `<p style="color:#fff;">No results with "${seq}"</p>`;
+  }
+});
+
+/* Reset button to show all permutations again */
+document.getElementById('resetBtn').addEventListener('click', () => {
+  const cats1 = categorize(allCombosGrid1);
+  const cats2 = categorize(allCombosGrid2);
+  document.getElementById('results-grid1').innerHTML='';
+  document.getElementById('results-grid2').innerHTML='';
+
+  for (const [category, combos] of Object.entries(cats1)) {
+    document.getElementById('results-grid1').appendChild(createCategorySection(`Grid 1 - ${category}`, combos));
+  }
+  for (const [category, combos] of Object.entries(cats2)) {
+    document.getElementById('results-grid2').appendChild(createCategorySection(`Grid 2 - ${category}`, combos));
   }
 });
 </script>
