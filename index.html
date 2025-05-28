@@ -3,186 +3,97 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Generate 256 Combinations in Grid</title>
+<title>Two Grids with Unique 256 Combinations</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 10px;
-  text-align: center;
-}
-h1 {
-  margin-bottom: 20px;
-}
-#grid {
-  display: grid;
-  grid-template-columns: repeat(4, 80px);
-  gap: 10px;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-#grid input {
-  width: 80px;
-  height: 80px;
-  font-size: 24px;
-  text-align: center;
-}
-.buttons {
-  margin-bottom: 20px;
-}
-#searchContainer {
-  margin-bottom: 20px;
-}
-#searchInput {
-  width: 300px;
-  padding: 8px;
-  font-size: 16px;
-}
-#combinations {
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid #ccc;
-  padding: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-}
-.comb {
-  background-color: #f0f0f0;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 16px;
-  min-width: 50px;
-  text-align: center;
-}
-#results {
-  margin-top: 20px;
-  font-weight: bold;
-}
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  h2 { margin-top: 30px; }
+  .grid-container { display: flex; gap: 50px; margin-top: 20px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 60px); gap: 10px; }
+  .grid input { width: 60px; height: 60px; text-align: center; font-size: 20px; }
+  button { padding: 10px 20px; font-size: 16px; margin-top: 20px; }
 </style>
 </head>
 <body>
 
-<h1>Generate 256 Combinations in Grid</h1>
+<h1>Two Grids Displaying Unique 4-Digit Combinations</h1>
 
-<div id="grid"></div>
+<button id="generateBtn">Generate Both Grids</button>
 
-<div class="buttons">
-  <button id="generateBtn">Generate</button>
-  <button id="resetBtn">Reset</button>
+<div class="grid-container">
+  <div>
+    <h2>Grid 1</h2>
+    <div class="grid" id="grid1">
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+    </div>
+  </div>
+  
+  <div>
+    <h2>Grid 2</h2>
+    <div class="grid" id="grid2">
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+      <input type="text" maxlength="4" />
+    </div>
+  </div>
 </div>
-
-<div id="searchContainer">
-  <input type="text" id="searchInput" placeholder="Search sequences..." />
-  <button id="searchBtn">Search</button>
-</div>
-
-<h2>Total Combinations: 256</h2>
-<div id="combinations"></div>
-
-<div id="results"></div>
 
 <script>
-// Generate the 4x4 grid of input fields
-const gridSize = 4;
-const gridContainer = document.getElementById('grid');
+const totalNumbers = 256; // from 0000 to 0255
+const allNumbers = Array.from({length: totalNumbers}, (_, i) => i.toString().padStart(4, '0'));
 
-function createGrid() {
-  gridContainer.innerHTML = '';
-  for (let i=0; i<gridSize*gridSize; i++) {
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.maxLength = 4; // allow 4 digits
-    input.placeholder = '0000';
-    gridContainer.appendChild(input);
+const grid1Inputs = document.querySelectorAll('#grid1 input');
+const grid2Inputs = document.querySelectorAll('#grid2 input');
+
+function getUniqueRandomNumbers(count) {
+  // Shuffle array and pick first 'count' elements
+  const shuffled = [...allNumbers];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, count);
+}
+
+function populateGrid(gridInputs) {
+  const selectedNumbers = getUniqueRandomNumbers(16);
+  for (let i=0; i<16; i++) {
+    gridInputs[i].value = selectedNumbers[i];
   }
 }
 
-// Reset grid to empty
-function resetGrid() {
-  const inputs = document.querySelectorAll('#grid input');
-  inputs.forEach(inp => {
-    inp.value = '';
-  });
-}
-
-// Generate all 256 combinations from 0000 to 0255 (for simplicity, or 0000 to 9999)
-function generateAllCombinations() {
-  const inputs = document.querySelectorAll('#grid input');
-  let comboIndex = 0;
-  for (let num=0; num<256; num++) {
-    const comboStr = num.toString().padStart(4,'0');
-    // Fill 4 inputs sequentially
-    for (let i=0; i<4; i++) {
-      inputs[comboIndex*4 + i].value = comboStr;
-    }
-    comboIndex++;
-  }
-}
-
-// But wait, the grid has only 16 inputs, so filling all 256 combinations sequentially in the grid isn't feasible visibly.  
-// Instead, for demonstration, show only the first combination or generate a list below.
-// But based on your description, probably you want to generate all combinations in a list, not fill grid with all 256 at once.
-
-
-// Alternative: show all 256 combinations in a scrollable container
-function displayAllCombinations() {
-  const container = document.getElementById('combinations');
-  container.innerHTML = '';
-  for (let num=0; num<256; num++) {
-    const comboStr = num.toString().padStart(4,'0');
-    const span = document.createElement('div');
-    span.className='comb';
-    span.innerText=comboStr;
-    container.appendChild(span);
-  }
-}
-
-// Search for sequences in combinations
-function performSearch() {
-  const query = document.getElementById('searchInput').value.trim();
-  const combs = Array.from(document.querySelectorAll('.comb'));
-  combs.forEach(c => c.style.backgroundColor = '#f0f0f0');
-
-  if (!query) {
-    document.getElementById('results').innerText='Enter a sequence to search.';
-    return;
-  }
-  if (!/^[0-9]+$/.test(query) || query.length > 4) {
-    document.getElementById('results').innerText='Enter 1 to 4 digits.';
-    return;
-  }
-
-  let count=0;
-  combs.forEach(c => {
-    if (c.innerText.includes(query)) {
-      c.style.backgroundColor='yellow';
-      count++;
-    }
-  });
-  document.getElementById('results').innerText=`Found ${count} combinations containing "${query}".`;
-}
-
-// Event listeners
 document.getElementById('generateBtn').addEventListener('click', () => {
-  const inputs = document.querySelectorAll('#grid input');
-  // Generate all combinations and fill grid with them sequentially
-  for (let num=0; num<256; num++) {
-    const comboStr = num.toString().padStart(4,'0');
-    for (let i=0; i<4; i++) {
-      inputs[num*4 + i].value = comboStr[i];
-    }
-  }
+  populateGrid(grid1Inputs);
+  populateGrid(grid2Inputs);
 });
-document.getElementById('resetBtn').addEventListener('click', resetGrid);
-
-// Initialize grid and display all combinations
-createGrid();
-displayAllCombinations();
-
 </script>
+
 </body>
 </html>
