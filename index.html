@@ -3,220 +3,186 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Compare 4x4 Grids and Generate Combinations</title>
+<title>Compare Permutations from Two Grids</title>
 <style>
   body { font-family: Arial, sans-serif; padding: 20px; }
-  h2 { margin-top: 30px; }
-  .grids { display: flex; gap: 50px; margin-top: 20px; }
-  .grid { display: grid; grid-template-columns: repeat(4, 50px); gap: 10px; }
+  h1 { text-align: center; }
+  .container { display: flex; justify-content: space-between; }
+  .grid-container { width: 45%; display: inline-block; vertical-align: top; }
+  .grid { display: grid; grid-template-columns: repeat(4, 50px); gap: 10px; margin-top: 10px; }
   input { width: 50px; height: 50px; text-align: center; font-size: 20px; }
-  button { padding: 10px 20px; font-size: 16px; margin-top: 10px; }
-  #controls { margin-top: 20px; display: flex; align-items: center; gap: 10px; }
-  #searchInput { padding: 8px; width: 300px; font-size: 16px; }
-  #combinations { margin-top: 20px; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
-  .combo { padding: 5px 10px; background-color: #f0f0f0; border-radius: 4px; font-family: monospace; margin: 2px 0; }
-  .grid-section { margin-bottom: 30px; }
+  button { padding: 10px 20px; font-size: 16px; margin-top: 10px; display: block; width: 100%; }
+  .results { margin-top: 20px; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; white-space: pre-wrap; font-family: monospace; }
+  h2 { text-align: center; }
+  .comparison { margin-top: 20px; }
+  .side-by-side { display: flex; justify-content: space-around; }
+  .column { width: 45%; }
+  .common-permutations { white-space: pre; font-family: monospace; }
 </style>
 </head>
 <body>
 
-<h1>Compare 4x4 Grids and Generate All Possible Combinations</h1>
+<h1>Generate and Compare Permutations from Two Grids</h1>
 
-<div class="grids">
-  <!-- First Grid -->
-  <div class="grid-section">
+<div class="container">
+  <!-- Left Grid -->
+  <div class="grid-container" id="grid1Container">
     <h2>Grid 1</h2>
     <div class="grid" id="grid1">
-      <!-- 16 inputs -->
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
+      <input maxlength="1" value="1" /> <input maxlength="1" value="3" /> <input maxlength="1" value="4" /> <input maxlength="1" value="6" />
+      <input maxlength="1" value="3" /> <input maxlength="1" value="4" /> <input maxlength="1" value="7" /> <input maxlength="1" value="6" />
+      <input maxlength="1" value="4" /> <input maxlength="1" value="6" /> <input maxlength="1" value="7" /> <input maxlength="1" value="8" />
+      <input maxlength="1" value="2" /> <input maxlength="1" value="5" /> <input maxlength="1" value="7" /> <input maxlength="1" value="9" />
     </div>
+    <button id="generate1">Generate from Grid 1</button>
+    <button id="compare1">Compare Permutations</button>
+    <div id="result1" class="results"></div>
   </div>
-  <!-- Second Grid -->
-  <div class="grid-section">
+
+  <!-- Right Grid -->
+  <div class="grid-container" id="grid2Container">
     <h2>Grid 2</h2>
     <div class="grid" id="grid2">
-      <!-- 16 inputs -->
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
-      <input type="text" maxlength="1" />
+      <input maxlength="1" value="2" /> <input maxlength="1" value="4" /> <input maxlength="1" value="5" /> <input maxlength="1" value="7" />
+      <input maxlength="1" value="3" /> <input maxlength="1" value="5" /> <input maxlength="1" value="8" /> <input maxlength="1" value="7" />
+      <input maxlength="1" value="4" /> <input maxlength="1" value="7" /> <input maxlength="1" value="8" /> <input maxlength="1" value="9" />
+      <input maxlength="1" value="1" /> <input maxlength="1" value="4" /> <input maxlength="1" value="6" /> <input maxlength="1" value="8" />
     </div>
+    <button id="generate2">Generate from Grid 2</button>
+    <button id="compare2">Compare Permutations</button>
+    <div id="result2" class="results"></div>
   </div>
 </div>
 
-<div id="controls">
-  <button id="generateBtn">Generate Combinations</button>
-  <button id="resetBtn">Reset</button>
-  <input type="text" id="searchInput" placeholder="Search combinations..." />
-</div>
-
-<h3>Generated Combinations for Grid 1</h3>
-<div id="combinations1" style="max-height:200px; overflow-y:auto; border:1px solid #ccc; padding:10px;"></div>
-
-<h3>Generated Combinations for Grid 2</h3>
-<div id="combinations2" style="max-height:200px; overflow-y:auto; border:1px solid #ccc; padding:10px;"></div>
-
-<div>
-  <h3>Search Results</h3>
-  <div id="searchResults" style="max-height:200px; overflow-y:auto; border:1px solid #ccc; padding:10px;"></div>
+<!-- Section for common permutations side by side -->
+<div class="comparison" id="comparisonSection" style="display:none;">
+  <h2>Common Permutations</h2>
+  <div class="side-by-side">
+    <div class="column" id="commonLeft">
+      <h3>From Grid 1</h3>
+      <div class="common-permutations" id="commonPermsLeft"></div>
+    </div>
+    <div class="column" id="commonRight">
+      <h3>From Grid 2</h3>
+      <div class="common-permutations" id="commonPermsRight"></div>
+    </div>
+  </div>
 </div>
 
 <script>
-const grid1Inputs = document.querySelectorAll('#grid1 input');
-const grid2Inputs = document.querySelectorAll('#grid2 input');
-const combinationsDiv1 = document.getElementById('combinations1');
-const combinationsDiv2 = document.getElementById('combinations2');
-const searchInput = document.getElementById('searchInput');
-const searchResultsDiv = document.getElementById('searchResults');
+// Store generated combinations globally
+let combos1 = [];
+let combos2 = [];
 
-let grid1Options = []; // Options per position
-let grid2Options = [];
-let grid1Combinations = [];
-let grid2Combinations = [];
-
-// Generate all options per grid based on inputs
-function getOptions(inputs) {
-  const options = [];
-  for (let i=0; i<16; i++) {
-    const val = inputs[i].value.trim();
-    if (val === '') {
-      options.push(['0','1','2','3','4','5','6','7','8','9']); // all digits if empty
-    } else if (/^[0-9]$/.test(val)) {
-      options.push([val]);
-    } else {
-      // invalid input, treat as empty
-      options.push(['0','1','2','3','4','5','6','7','8','9']);
+// Function to get grid data as columns (top to bottom)
+function getColumns(gridId) {
+  const inputs = document.querySelectorAll(`#${gridId} input`);
+  const columns = [[], [], [], []];
+  for (let colIdx = 0; colIdx < 4; colIdx++) {
+    for (let rowIdx = 0; rowIdx < 4; rowIdx++) {
+      const index = rowIdx * 4 + colIdx;
+      const val = inputs[index].value.trim();
+      if (val !== '') {
+        columns[colIdx].push(val);
+      }
     }
   }
-  return options;
+  return columns;
 }
 
-// Generate all combinations from options
-function generateAllCombinations(options) {
-  const results = [];
-  function recurse(current, index) {
-    if (index === options.length) {
-      results.push(current.join(''));
-      return;
-    }
-    for (const digit of options[index]) {
-      recurse([...current, digit], index + 1);
-    }
-  }
-  recurse([], 0);
-  return results;
-}
-
-function generate() {
-  // Get options for each grid
-  grid1Options = getOptions(grid1Inputs);
-  grid2Options = getOptions(grid2Inputs);
-  
-  // Generate all combinations
-  grid1Combinations = generateAllCombinations(grid1Options);
-  grid2Combinations = generateAllCombinations(grid2Options);
-  
-  // Display for grid 1
-  combinationsDiv1.innerHTML = '';
-  grid1Combinations.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'combo';
-    div.textContent = c;
-    combinationsDiv1.appendChild(div);
-  });
-  
-  // Display for grid 2
-  combinationsDiv2.innerHTML = '';
-  grid2Combinations.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'combo';
-    div.textContent = c;
-    combinationsDiv2.appendChild(div);
-  });
-  
-  // Clear search results
-  document.getElementById('searchResults').innerHTML = '';
-}
-
-// Reset inputs and outputs
-function reset() {
-  document.querySelectorAll('input[type=text]').forEach(input => input.value = '');
-  combinationsDiv1.innerHTML = '';
-  combinationsDiv2.innerHTML = '';
-  document.getElementById('searchResults').innerHTML = '';
-}
-
-// Search filter
-searchInput.addEventListener('input', () => {
-  const term = searchInput.value.trim();
-  if (term === '') {
-    // Show all combinations for both grids
-    combinationsDiv1.innerHTML = '';
-    grid1Combinations.forEach(c => addCombo(c, combinationsDiv1));
-    combinationsDiv2.innerHTML = '';
-    grid2Combinations.forEach(c => addCombo(c, combinationsDiv2));
-    document.getElementById('searchResults').innerHTML = '';
-  } else {
-    // Filter both lists
-    const filtered1 = grid1Combinations.filter(c => c.includes(term));
-    const filtered2 = grid2Combinations.filter(c => c.includes(term));
-    // Show in searchResults
-    document.getElementById('searchResults').innerHTML = '';
-    if (filtered1.length > 0) {
-      const title = document.createElement('div');
-      title.innerHTML = '<strong>Grid 1 Matches:</strong>';
-      document.getElementById('searchResults').appendChild(title);
-      filtered1.forEach(c => addCombo(c, document.getElementById('searchResults')));
-    }
-    if (filtered2.length > 0) {
-      const title = document.createElement('div');
-      title.innerHTML = '<strong>Grid 2 Matches:</strong>';
-      document.getElementById('searchResults').appendChild(title);
-      filtered2.forEach(c => addCombo(c, document.getElementById('searchResults')));
+// Generate all combinations by picking one element from each column
+function generateColumnCombinations(columns) {
+  const results = new Set();
+  for (let a of columns[0]) {
+    for (let b of columns[1]) {
+      for (let c of columns[2]) {
+        for (let d of columns[3]) {
+          const combo = a + ' ' + b + ' ' + c + ' ' + d;
+          results.add(combo);
+        }
+      }
     }
   }
+  return Array.from(results);
+}
+
+function showResults(containerId, combos) {
+  document.getElementById(containerId).textContent = combos.join('\n');
+}
+
+function findCommon(combosA, combosB) {
+  const setA = new Set(combosA);
+  const setB = new Set(combosB);
+  const common = [...setA].filter(x => setB.has(x));
+  return common;
+}
+
+// Generate handlers
+document.getElementById('generate1').addEventListener('click', () => {
+  const columns = getColumns('grid1');
+  combos1 = generateColumnCombinations(columns);
+  showResults('result1', combos1);
 });
 
-function addCombo(c, container) {
-  const div = document.createElement('div');
-  div.className = 'combo';
-  div.textContent = c;
-  container.appendChild(div);
+document.getElementById('generate2').addEventListener('click', () => {
+  const columns = getColumns('grid2');
+  combos2 = generateColumnCombinations(columns);
+  showResults('result2', combos2);
+});
+
+// Compare handlers
+document.getElementById('compare1').addEventListener('click', () => {
+  if (combos1.length === 0) {
+    alert('Please generate permutations from Grid 1 first.');
+    return;
+  }
+  if (combos2.length === 0) {
+    alert('Please generate permutations from Grid 2 first.');
+    return;
+  }
+  const common = findCommon(combos1, combos2);
+  displayCommonPermutations(common);
+});
+
+document.getElementById('compare2').addEventListener('click', () => {
+  if (combos1.length === 0) {
+    alert('Please generate permutations from Grid 1 first.');
+    return;
+  }
+  if (combos2.length === 0) {
+    alert('Please generate permutations from Grid 2 first.');
+    return;
+  }
+  const common = findCommon(combos1, combos2);
+  displayCommonPermutations(common);
+});
+
+function displayCommonPermutations(commonArray) {
+  document.getElementById('comparisonSection').style.display = 'block';
+  const leftDiv = document.getElementById('commonPermsLeft');
+  const rightDiv = document.getElementById('commonPermsRight');
+
+  leftDiv.innerHTML = '';
+  rightDiv.innerHTML = '';
+
+  if (commonArray.length === 0) {
+    leftDiv.textContent = 'No common permutations.';
+    rightDiv.textContent = 'No common permutations.';
+    return;
+  }
+
+  // Display the permutations neatly side by side
+  commonArray.forEach(perm => {
+    const leftItem = document.createElement('div');
+    leftItem.textContent = perm;
+    leftDiv.appendChild(leftItem);
+
+    const rightItem = document.createElement('div');
+    rightItem.textContent = perm;
+    rightDiv.appendChild(rightItem);
+  });
 }
-
-document.getElementById('generateBtn').addEventListener('click', generate);
-document.getElementById('resetBtn').addEventListener('click', reset);
-
-// Initialize with empty grids
-reset();
-
 </script>
+
 </body>
 </html>
